@@ -10,17 +10,22 @@ import math
 
 def is_prime(n):
     '''is_prime(n) ---> True if n is prime; False otherwise.'''
-    bool = false
+    if n == 2:
+        return false
     if n == 1:
         return true
     if n == 3:
         return true
-    if n/2.0 > 1:
-        bool = is_prime(n/2.0)
-    if bool == ture:
-        return true
-    if n 
-
+    i=n
+    while(i <= n):
+        j=2
+        while(j <= (i/j)):
+            if not(i%j): break
+            j = j + 1
+            if (j > i/j): 
+                if i == n:
+                    return true
+        i = i + 1
     pass
 
 def next_prime_after(p):
