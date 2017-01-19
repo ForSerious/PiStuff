@@ -11,8 +11,16 @@ import math
 def is_prime(n):
     '''is_prime(n) ---> True if n is prime; False otherwise.'''
     bool = false
-    if n/2 > 1:
-        bool = is_prime(n/2)
+    if n == 1:
+        return true
+    if n == 3:
+        return true
+    if n/2.0 > 1:
+        bool = is_prime(n/2.0)
+    if bool == ture:
+        return true
+    if n 
+
     pass
 
 def next_prime_after(p):
