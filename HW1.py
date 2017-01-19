@@ -10,7 +10,9 @@ import math
 
 def is_prime(n):
     '''is_prime(n) ---> True if n is prime; False otherwise.'''
-    # your code here
+    bool = false
+    if n/2 > 1:
+        bool = is_prime(n/2)
     pass
 
 def next_prime_after(p):
