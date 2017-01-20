@@ -16,7 +16,7 @@ def is_prime(n):
         return true
     if n == 3:
         return true
-    i=n
+    i=2
     while(i <= n):
         j=2
         while(j <= (i/j)):
@@ -32,12 +32,30 @@ def next_prime_after(p):
     '''computes next prime after prime p; if p is not prime, returns None.'''
     if not is_prime(p): return None
     ## your code here
+    if n == 2:
+        return 3
+    if n == 1:
+        return 2
+    if n == 3:
+        return true
+    i=2
+    while():
+        j=2
+        while(j <= (i/j)):
+            if not(i%j): break
+            j = j + 1
+            if (j > i/j): 
+                if i > p:
+                    return i
+        i = i + 1
     pass
 
 def euclid_number(i):
     '''euclid_number(i) --> i-th Euclid number.'''
     if i < 0: return None
-   ## your code here
+    ## your code here
+    for iCount in xrange(i+1):
+        
     pass
 
 def compute_first_n_eucs(n):
