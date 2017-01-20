@@ -11,11 +11,11 @@ import math
 def is_prime(n):
     '''is_prime(n) ---> True if n is prime; False otherwise.'''
     if n == 2:
-        return false
+        return False
     if n == 1:
-        return true
+        return True
     if n == 3:
-        return true
+        return True
     i=2
     while(i <= n):
         j=2
@@ -24,7 +24,7 @@ def is_prime(n):
             j = j + 1
             if (j > i/j): 
                 if i == n:
-                    return true
+                    return True
         i = i + 1
     pass
 
@@ -37,7 +37,7 @@ def next_prime_after(p):
     if n == 1:
         return 2
     if n == 3:
-        return true
+        return True
     i=2
     while():
         j=2
