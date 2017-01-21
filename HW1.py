@@ -86,6 +86,18 @@ def prime_factors_of(n):
     if n < 2: return []
     factors = []
     ## your code here
+    if is_prime(n):
+        factors.append(n)
+    else:
+        lPrime = sorted(iUsed)
+        iFactored = n
+        iAt = 0
+        while (lPrime[iAt] < n):
+            if iFactored%lPrime[iAt] == 0:
+                iFactored = iFactored/lPrime[iAt]
+                factors.append(iAt)
+            else:
+                iAt+=iAt
     return factors
 
 def tabulate_euc_factors(n):
