@@ -8,7 +8,7 @@
 
 import math
 iNext = 0
-iUsed = set([])
+iUsed = set()
 iAt = 0
 def is_prime(n):
     '''is_prime(n) ---> True if n is prime; False otherwise.'''
@@ -29,7 +29,7 @@ def is_prime(n):
                 if i == n:
                     return True
         i = i + 1
-    pass
+    return Flase
 
 def next_prime_after(p):
     '''computes next prime after prime p; if p is not prime, returns None.'''
@@ -58,14 +58,15 @@ def euclid_number(i):
     '''euclid_number(i) --> i-th Euclid number.'''
     if i < 0: return None
     ## your code here
-    iBy = 100
+    iBy = 50
     iTotal = 1
     if i > 20:
         iBy = iBy * i
     if len(iUsed) < i:
         next_prime_after(iBy)
+    lPrimes = sorted(iUsed)
     for iCount in xrange(i+1):
-        iBy = iBy * iUsed[iCount]
+        iBy = iBy * lPrimes[iCount]
     iBy = iBy + 1
     return iBy
     pass
