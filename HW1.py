@@ -1,4 +1,4 @@
-#!/usr/bin/python
+﻿#!/usr/bin/python
 
 #########################################
 ## CS 3430: S2017: HW01: Euclid Numbers
@@ -7,7 +7,9 @@
 #########################################
 
 import math
-
+iNext = 0
+iUsed = set([])
+iAt = 0
 def is_prime(n):
     '''is_prime(n) ---> True if n is prime; False otherwise.'''
     if n == 2:
@@ -22,7 +24,8 @@ def is_prime(n):
         while(j <= (i/j)):
             if not(i%j): break
             j = j + 1
-            if (j > i/j): 
+            if (j > i/j):
+                iUsed.add(i)
                 if i == n:
                     return True
         i = i + 1
@@ -46,6 +49,7 @@ def next_prime_after(p):
             j = j + 1
             if (j > i/j): 
                 if i > p:
+                    iUsed.add(i)
                     return i
         i = i + 1
     pass
@@ -55,7 +59,7 @@ def euclid_number(i):
     if i < 0: return None
     ## your code here
     for iCount in xrange(i+1):
-        
+        iLegn = len(iUsed)
     pass
 
 def compute_first_n_eucs(n):
