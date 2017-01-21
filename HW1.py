@@ -13,9 +13,9 @@ iAt = 0
 def is_prime(n):
     '''is_prime(n) ---> True if n is prime; False otherwise.'''
     if n == 2:
-        return False
-    if n == 1:
         return True
+    if n == 1:
+        return False
     if n == 3:
         return True
     i=2
@@ -58,8 +58,13 @@ def euclid_number(i):
     '''euclid_number(i) --> i-th Euclid number.'''
     if i < 0: return None
     ## your code here
+    iBy = 100
+    if i > 20:
+        iBy = iBy * i
+    if len(iUsed) < i:
+        next_prime_after(iBy)
     for iCount in xrange(i+1):
-        iLegn = len(iUsed)
+        
     pass
 
 def compute_first_n_eucs(n):
