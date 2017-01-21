@@ -89,19 +89,26 @@ def prime_factors_of(n):
     if is_prime(n):
         factors.append(n)
     else:
+        '''I'm not sure if I need this, but it's here.'''
+        next_prime_after(n)
         lPrime = sorted(iUsed)
         iFactored = n
         iAt = 0
         while (lPrime[iAt] < n):
             if iFactored%lPrime[iAt] == 0:
                 iFactored = iFactored/lPrime[iAt]
-                factors.append(iAt)
+                factors.append(lPrime[iAt])
+                if iFactored == 1:
+                    break
             else:
-                iAt+=iAt
+                iAt+=1
     return factors
 
 def tabulate_euc_factors(n):
     '''returns a list of 3-tuples (i, euc, factors).'''
     euc_factors = []
     ## your code here
+    lNums = compute_first_n_eucs(n)
+    for i in xrange(n+1):
+        euc_factors.append((n,lNums[i],prime_factors_of(lNums[i])))
     return euc_factors
