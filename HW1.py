@@ -12,6 +12,9 @@ iUsed = set()
 iAt = 0
 def is_prime(n):
     '''is_prime(n) ---> True if n is prime; False otherwise.'''
+    if len(iUsed) < 2:
+        iUsed.add(2)
+        iUsed.add(3)
     if n == 2:
         return True
     if n == 1:
@@ -29,7 +32,7 @@ def is_prime(n):
                 if i == n:
                     return True
         i = i + 1
-    return Flase
+    return False
 
 def next_prime_after(p):
     '''computes next prime after prime p; if p is not prime, returns None.'''
@@ -65,10 +68,13 @@ def euclid_number(i):
     if len(iUsed) < i:
         next_prime_after(iBy)
     lPrimes = sorted(iUsed)
+    print lPrimes
     for iCount in xrange(i+1):
-        iBy = iBy * lPrimes[iCount]
-    iBy = iBy + 1
-    return iBy
+        print iTotal
+        iTotal = iTotal * lPrimes[iCount]
+        print iTotal
+    iTotal = iTotal + 1
+    return iTotal
     pass
 
 def compute_first_n_eucs(n):
