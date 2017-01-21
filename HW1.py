@@ -68,19 +68,17 @@ def euclid_number(i):
     if len(iUsed) < i:
         next_prime_after(iBy)
     lPrimes = sorted(iUsed)
-    print lPrimes
     for iCount in xrange(i+1):
-        print iTotal
         iTotal = iTotal * lPrimes[iCount]
-        print iTotal
     iTotal = iTotal + 1
     return iTotal
-    pass
 
 def compute_first_n_eucs(n):
     '''returns a list of the first n euclid numbers.'''
     eucs = []
     ## your code here
+    for i in xrange(n + 1):
+        eucs.append(euclid_number(i))
     return eucs
 
 def prime_factors_of(n):
