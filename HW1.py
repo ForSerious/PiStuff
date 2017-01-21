@@ -59,12 +59,15 @@ def euclid_number(i):
     if i < 0: return None
     ## your code here
     iBy = 100
+    iTotal = 1
     if i > 20:
         iBy = iBy * i
     if len(iUsed) < i:
         next_prime_after(iBy)
     for iCount in xrange(i+1):
-        
+        iBy = iBy * iUsed[iCount]
+    iBy = iBy + 1
+    return iBy
     pass
 
 def compute_first_n_eucs(n):
