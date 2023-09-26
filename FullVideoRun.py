@@ -529,8 +529,8 @@ def final_pass(filepath, filename):
         pt2 = ''
         if filepath['-pass2']:
             pt2 = 'pt2'
-        if os.path.exists(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '.json')):
-            os.remove(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '.json'))
+        if os.path.exists(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '_run.json')):
+            os.remove(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '_run.json'))
     return (True, out_path[1])
 
 
@@ -855,8 +855,8 @@ def get_json_state(filepath):
     if filepath['-pass2']:
         pt2 = 'pt2'
     state = {}
-    if os.path.exists(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '.json')):
-        state_file = open(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '.json'), 'r')
+    if os.path.exists(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '_run.json')):
+        state_file = open(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '_run.json'), 'r')
         state = json.load(state_file)
     return state
 
@@ -866,10 +866,10 @@ def save_json_state(filepath, what_pass):
     if filepath['-pass2']:
         pt2 = 'pt2'
     state = get_json_state(filepath)
-    if os.path.exists(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '.json')):
-        os.remove(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '.json'))
+    if os.path.exists(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '_run.json')):
+        os.remove(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '_run.json'))
     state[what_pass] = 'done'
-    outfile = open(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '.json'), 'w')
+    outfile = open(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '_run.json'), 'w')
     json.dump(state, outfile)
 
 
