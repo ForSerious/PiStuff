@@ -214,7 +214,7 @@ def amq_pass(filepath, filename):
             am = 'ahq-12'
         command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + \
                   os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -sws_flags spline+accurate_rnd+full_chroma_in' \
-                  't -color_trc 2 -colorspace 2 -color_primaries 2 -r ' + filepath['-r'] + ' -filter_complex scale=w=' + filepath['-w'] + ':h=' + filepath['-h'] + ',' \
+                  't -color_trc 1 -colorspace 1 -color_primaries 1 -r ' + filepath['-r'] + ' -filter_complex scale=w=' + filepath['-w'] + ':h=' + filepath['-h'] + ',' \
                   'setsar=1,tvai_up=model=' + am + ':scale=1.0:w=' + filepath['-w'] + ':h=' + filepath['-h'] + ':blend=' + blend + ':device=0:vra' \
                   'm=1:instances=1 -c:v png -pix_fmt rgb24 "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
     try:
@@ -330,14 +330,17 @@ def ahq_pass(filepath, filename):
     if filepath.get('-med', 'null') != null:
         model = 'amq-13'
     scale = '2.25'
+    if filepath.get('-gaia', 'null') != null:
+        scale = '0'
+        model = 'ghq-5'
     if filepath.get('-hd', 'null') != null:
         scale = '1'
-    blend = '0.2'
+    blend = '0'
     if filepath.get('-blend', 'null') != null:
         blend = filepath['-blend']
     command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' \
               + os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -avoid_negative_ts 1 -sws_flags spline+accurate' \
-              '_rnd+full_chroma_int -color_trc 2 -colorspace 2 -color_primaries 2 -filter_complex scale=w=' + \
+              '_rnd+full_chroma_int -color_trc 1 -colorspace 1 -color_primaries 1 -filter_complex scale=w=' + \
               filepath['-w'] + ':h=' + filepath['-h'] + ',setsar=1,tvai_up=model=' + model + ':scale=' + scale + ':w=1920:h=1080:blend=' + blend + ':device' \
               '=0:vram=1:instances=1,scale=w=1920:h=1080:flags=lanczos:threads=0:force_original_aspect_ratio=decrease,p' \
               'ad=1920:1080:-1:-1:color=black -c:v png -pix_fmt rgb24  "' + os.path.join(out_path[0], out_path[1]) + \
