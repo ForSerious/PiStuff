@@ -10,6 +10,12 @@ from datetime import timedelta
 
 DEBUG = False
 version_number = '09'
+DBPOWER = '"C:\\Program Files\\dBpoweramp\\CoreConverter.exe"'
+dbOutPath = 'C:\\Users\\Peasant\\Desktop\\Process\\Batch\\'
+finalOut = 'G:\\Clip\\CDN-48kHz\\'
+STTOOL = '"G:\\stereo_tool_cmd.exe"'
+STSPATH = 'G:\\'
+RECOMPPATH = 'C:\\Users\\Peasant\\Desktop\\Process\\ReComp\\'
 
 '''So, this should generate every file in the rootdir and return them one by one.'''
 def generate_next_file(rootdir):
@@ -57,8 +63,8 @@ def convert_to_32_wav(tags):
     if tags[10] is not None:
         sts = tags[10]
     try:
-        command = '"C:\\Program Files\\dBpoweramp\\CoreConverter.exe"' + ' -infile="' + tags[0] + \
-                  '" -outfile="C:\\Users\\Peasant\\Desktop\\Process\\Batch\\' + tags[1] + tags[2] + ' - ' + \
+        command = DBPOWER + ' -infile="' + tags[0] + \
+                  '" -outfile="' + dbOutPath + tags[1] + tags[2] + ' - ' + \
                   tags[4] + ' - ' + tags[5] + '.wav" -convert_to="Wave" -dspeffect1="Bit Depth=-depth={qt}32 float{qt}"' \
                   '-dspeffect2="Resample=-frequency={qt}48000{qt}" -dspeffect3="ID Tag' \
                   ' Processing=-delsingle0={qt}<>{qt} -delsingle1={qt}<DYNAMIC RANGE>{qt}' \
@@ -75,9 +81,9 @@ def convert_to_32_wav(tags):
     except:
         return (False, traceback.format_exc())
     try:
-        command = '"G:\\stereo_tool_cmd.exe" "C:\\Users\\Peasant\\Desktop\\Process\\Batch\\' + tags[1] + tags[2] +\
-                  ' - ' + tags[4] + ' - ' + tags[5] + '.wav" "C:\\Users\\Peasant\\Desktop\\Process\\Batch\\' + tags[1]\
-                  + tags[2] + ' - ' + tags[4] + ' - ' + tags[5] + '.wav" -s G:\\' + sts + '.sts -1 -r 48000 -b 32f -k "' \
+        command = STTOOL + ' "' + dbOutPath + tags[1] + tags[2] +\
+                  ' - ' + tags[4] + ' - ' + tags[5] + '.wav" "' + dbOutPath + tags[1]\
+                  + tags[2] + ' - ' + tags[4] + ' - ' + tags[5] + '.wav" -s ' + STSPATH + sts + '.sts -1 -r 48000 -b 32f -k "' \
                   '<3f1ca7d95f71983602e58101812939c173f5b1992131d9e728ed858371c433b8>"'
         if DEBUG:
             print('Stereo Tool command')
@@ -88,13 +94,12 @@ def convert_to_32_wav(tags):
     if tags[1] == 'ZZ':
         return (False, 'Dummy file.')
     else:
-        return (True, 'C:\\Users\\Peasant\\Desktop\\Process\\Batch\\' + tags[1] + tags[2] + ' - ' + tags[4] + ' - ' + tags[5] +\
-           '.wav')
+        return (True, dbOutPath + tags[1] + tags[2] + ' - ' + tags[4] + ' - ' + tags[5] + '.wav')
 
 '''Create the command to convert to flac'''
 def convert_to_flac(tags):
     try:
-        command = '"C:\\Program Files\\dBpoweramp\\CoreConverter.exe"' + ' -infile="' + tags[0] + '" -outfile="G:\\Clip\\CDN-48kHz\\' + tags[1] + '\\' + tags[2] + ' - ' + tags[3] + '\\' + \
+        command = DBPOWER + ' -infile="' + tags[0] + '" -outfile="' + finalOut + tags[1] + '\\' + tags[2] + ' - ' + tags[3] + '\\' + \
             tags[4] + ' - ' + tags[5] + '.flac" -convert_to="FLAC" -compression-level-8 -dspeffect1="Bit ' \
             'Depth=-depth={qt}32 float{qt}" -dspeffect2="Volume Normalize=-mode={qt}ebu{qt} -maxamp={qt}8{qt}'\
             ' -desiredb={qt}' + tags[6] + '{qt} -adapt_wnd={qt}6000{qt} -fixed={qt}0{qt}" -dspeffect3="Bit'\
@@ -118,8 +123,7 @@ def convert_to_flac(tags):
 def reco_file(tags, converter):
     if tags[9] is None:
         try:
-            command = '"C:\\Program Files\\dBpoweramp\\CoreConverter.exe"' + ' -infile="' + tags[0] + '" -outfile="C:\\' \
-                      'Users\\Peasant\\Desktop\\Process\\ReComp\\' + tags[1] + tags[2] + ' - ' + tags[4] + ' - ' + tags[5]\
+            command = DBPOWER + ' -infile="' + tags[0] + '" -outfile="' + RECOMPPATH + tags[1] + tags[2] + ' - ' + tags[4] + ' - ' + tags[5]\
                       + '.wav" -convert_to="Wave" -dspeffect1="Bit Depth=-depth={qt}16{qt} -dither={qt}tpdf{qt}"'
             if DEBUG:
                 print('To wav 16 in recomp command')
