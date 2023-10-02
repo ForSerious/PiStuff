@@ -611,8 +611,6 @@ def populate_options(file_path):
             return None
         return the_way
     else:
-        print('You need to make an options file.')
-        print(file_path)
         return None
 
 
