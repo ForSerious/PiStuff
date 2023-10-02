@@ -196,7 +196,7 @@ def amq_pass(filepath, filename):
         if exc.errno != errno.EEXIST:
             raise
         pass
-    blend = ''
+    blend = '0'
     if filepath.get('-blend', 'null') != null:
         blend = filepath['-blend']
     if filepath.get('-theia', null) != null:
