@@ -196,7 +196,7 @@ def amq_pass(filepath, filename):
         if exc.errno != errno.EEXIST:
             raise
         pass
-    blend = ''
+    blend = '0'
     if filepath.get('-blend', 'null') != null:
         blend = filepath['-blend']
     if filepath.get('-theia', null) != null:
@@ -607,6 +607,15 @@ def populate_options(file_path):
         if the_way.get('-crf', null) != null:
             CRF = the_way['-crf']
         the_way['-mkapath'] = os.path.join(file_path[0], file_path[1])
+        outfile = open(os.path.join(file_path[0], newpath + '.json'), 'w')
+        json.dump(the_way, outfile)
+        if the_way.get('-r', null) == null:
+            print('You forgot -r!')
+            return None
+        return the_way
+    elif os.path.exists(os.path.join(file_path[0], newpath + '.json')):
+        run_file = open(os.path.join(file_path[0], newpath + '.json'), 'r')
+        the_way = json.load(run_file)
         if the_way.get('-r', null) == null:
             print('You forgot -r!')
             return None
