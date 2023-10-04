@@ -209,6 +209,20 @@ def amq_pass(filepath, filename):
                   filepath['-h'] + ',setsar=1,tvai_up=model=thf-4:scale=1.0:w=' + filepath['-w'] + ':h=' + filepath['-h'] + \
                   ':noise=' + t_noise + ':blur=' + t_blur + ':compression=' + t_comp + ':device=0:vram=1:instances=1 -c:v png -pix_fmt rgb24 "' + \
                   os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
+    elif filepath.get('-nyx', null) != null:
+        n_comp = filepath.get('-nyxcomp', '0.0')
+        n_details = filepath.get('-nyxdetails', '0')
+        n_blur = filepath.get('-nyxblur', '0.0')
+        n_noise = filepath.get('-nyxnoise', '0.1')
+        n_halo = filepath.get('-nyxhalo', '0.0')
+        n_preblur = filepath.get('-nyxpreblur', '0')
+        n_blend = filepath.get('-nyxblend', '0.0')
+        command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + \
+                  os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -sws_flags spline+accurate_rnd' \
+                  '+full_chroma_int -r ' + filepath['-r'] + ' -filter_complex scale=w=' + filepath['-w'] + ':h=' + \
+                  filepath['-h'] + ',setsar=1,tvai_up=model=nyx-1:scale=1:preblur=' + n_preblur + ':noise=' + n_noise + \
+                  ':details=' + n_details + ':halo=' + n_halo + ':blur=' + n_blur + ':compression=' + n_comp + ':blend=' + n_blend + ':dev' \
+                  'ice=0:vram=1:instances=1 -c:v png -pix_fmt rgb24 "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
     else:
         am = 'amq-13'
         if filepath.get('-high', null) != null:
@@ -586,42 +600,40 @@ def convert_song(file_path):
 def populate_options(file_path):
     ext = file_path[1][-3:]
     newpath = file_path[1][:-4]
-    if os.path.exists(os.path.join(file_path[0], newpath + '.txt')):
+    if os.path.exists(os.path.join(file_path[0], newpath + '.json')):
+        print('Starting: ' + newpath)
+        run_file = open(os.path.join(file_path[0], newpath + '.json'), 'r')
+        the_way = json.load(run_file)
+    elif os.path.exists(os.path.join(file_path[0], newpath + '.txt')):
         print('Starting: ' + newpath)
         optionsFile = open(os.path.join(file_path[0], newpath + '.txt'), 'r', -1, 'utf-8')
         optionslist = optionsFile.readlines()
         the_way = read_options(optionslist)
-        the_way['-path'] = file_path[0]
-        the_way['-file'] = newpath
-        the_way['-pass2'] = False
-        the_way['-out'] = newpath
-        the_way['-folders'] = deque()
-        dar = get_dar(the_way, ext)
-        if DEBUG:
-            print(dar)
-        the_way['-w'] = dar[0]
-        the_way['-h'] = dar[1]
-        the_way['-ext'] = ext
-        if the_way.get('-name', null) != null:
-            the_way['-name'] = the_way['-name'].replace('_', ' ')
-        if the_way.get('-crf', null) != null:
-            CRF = the_way['-crf']
-        the_way['-mkapath'] = os.path.join(file_path[0], file_path[1])
         outfile = open(os.path.join(file_path[0], newpath + '.json'), 'w')
-        json.dump(the_way, outfile)
-        if the_way.get('-r', null) == null:
-            print('You forgot -r!')
-            return None
-        return the_way
-    elif os.path.exists(os.path.join(file_path[0], newpath + '.json')):
-        run_file = open(os.path.join(file_path[0], newpath + '.json'), 'r')
-        the_way = json.load(run_file)
-        if the_way.get('-r', null) == null:
-            print('You forgot -r!')
-            return None
-        return the_way
+        json.dump(the_way, outfile, indent=2)
     else:
         return None
+    the_way['-path'] = file_path[0]
+    the_way['-file'] = newpath
+    the_way['-pass2'] = False
+    the_way['-out'] = newpath
+    the_way['-folders'] = deque()
+    dar = get_dar(the_way, ext)
+    if DEBUG:
+        print(dar)
+    the_way['-w'] = dar[0]
+    the_way['-h'] = dar[1]
+    the_way['-ext'] = ext
+    if the_way.get('-name', null) != null:
+        the_way['-name'] = the_way['-name'].replace('_', ' ')
+    if the_way.get('-crf', null) != null:
+        global CRF
+        CRF = the_way['-crf']
+    the_way['-mkapath'] = os.path.join(file_path[0], file_path[1])
+    if the_way.get('-r', null) == null:
+        print('You forgot -r!')
+        return None
+    return the_way
 
 
 def run_ff(q, out, repo):
@@ -899,7 +911,6 @@ if __name__ == '__main__':
         if DEBUG:
             for elem in qTheStack:
                 print(elem)
-        print(str(len(qTheStack)) + ' Things loaded.')
         itemcount = 0
         printcount = 1001
         bstart = time()
@@ -922,6 +933,7 @@ if __name__ == '__main__':
                     CopyOption['-sort'] = get_sort_num(CopyOption['-t2'])
                     AmountLoop.append(CopyOption)
         AmountLoop.sort(key=lambda item: (item['-sort']), reverse=True)
+        print(str(len(AmountLoop)) + ' Things loaded.')
         for video in AmountLoop:
             ffinput.put(video)
         ff_out_put = JoinableQueue()
