@@ -210,18 +210,22 @@ def amq_pass(filepath, filename):
                   ':noise=' + t_noise + ':blur=' + t_blur + ':compression=' + t_comp + ':device=0:vram=1:instances=1 -c:v png -pix_fmt rgb24 "' + \
                   os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
     elif filepath.get('-nyx', null) != null:
-        n_comp = filepath.get('-nyxcomp', '0.0')
+        n_version = filepath.get('-nyxver', '2')
+        n_comp = filepath.get('-nyxcomp', '0')
         n_details = filepath.get('-nyxdetails', '0')
-        n_blur = filepath.get('-nyxblur', '0.0')
+        n_blur = filepath.get('-nyxblur', '0')
         n_noise = filepath.get('-nyxnoise', '0.1')
-        n_halo = filepath.get('-nyxhalo', '0.0')
+        n_halo = filepath.get('-nyxhalo', '0')
         n_preblur = filepath.get('-nyxpreblur', '0')
-        n_blend = filepath.get('-nyxblend', '0.0')
+        n_blend = filepath.get('-nyxblend', '0')
+        n_auto = ''
+        if filepath.get('-nyxauto', null) != null:
+            n_auto = ':estimate=8'
         command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + \
                   os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -sws_flags spline+accurate_rnd' \
                   '+full_chroma_int -r ' + filepath['-r'] + ' -filter_complex scale=w=' + filepath['-w'] + ':h=' + \
-                  filepath['-h'] + ',setsar=1,tvai_up=model=nyx-1:scale=1:preblur=' + n_preblur + ':noise=' + n_noise + \
-                  ':details=' + n_details + ':halo=' + n_halo + ':blur=' + n_blur + ':compression=' + n_comp + ':blend=' + n_blend + ':dev' \
+                  filepath['-h'] + ',setsar=1,tvai_up=model=nyx-' + n_version + ':scale=1:preblur=' + n_preblur + ':noise=' + n_noise + \
+                  ':details=' + n_details + ':halo=' + n_halo + ':blur=' + n_blur + ':compression=' + n_comp + ':blend=' + n_blend + n_auto + ':dev' \
                   'ice=0:vram=1:instances=1 -c:v png -pix_fmt rgb24 "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
     else:
         am = 'amq-13'
@@ -655,7 +659,7 @@ def run_amq(q, out, repo):
         if q.empty():
             break
         the_way = q.get()
-        if the_way.get('-amq', null) != null:
+        if the_way.get('-amq', null) != null or the_way.get('-nyx', null) != null or the_way.get('-theia', null) != null:
             out.put(amq_pass(the_way, the_way['-out']))
         else:
             out.put(the_way)
@@ -674,7 +678,7 @@ def run_apo(q, out, repo):
         if q.empty():
             break
         the_way = q.get()
-        if the_way.get('-apo', null) != null:
+        if the_way.get('-apo', null) != null or the_way.get('-apf', null) != null or the_way.get('-chr', null) != null or the_way.get('-chf', null) != null:
             out.put(apo_pass(the_way, the_way['-out']))
         else:
             out.put(the_way)
@@ -688,9 +692,9 @@ def run_prot(q, out, repo):
         if q.empty():
             break
         the_way = q.get()
-        if the_way.get('-ahq', null) != null:
+        if the_way.get('-ahq', null) != null or the_way.get('-gaia', null) != null:
             out.put(ahq_pass(the_way, the_way['-out']))
-        elif the_way.get('-prot', null) != null:
+        elif the_way.get('-prot', null) != null or the_way.get('-iris', null) != null:
             out.put(prot_pass(the_way, the_way['-out']))
         else:
             out.put(the_way)
@@ -707,7 +711,7 @@ def get_sort_num(q):
 def get_dar(the_way, ext):
     try:
         command = FFPROBE + ' -v error -show_entries stream=width,height,sa' \
-                            'mple_aspect_ratio,display_aspect_ratio -select_streams v:0 -of default=noprint_wrappers=1 "' + \
+                  'mple_aspect_ratio,display_aspect_ratio -select_streams v:0 -of default=noprint_wrappers=1 "' + \
                   os.path.join(the_way['-path'], the_way['-file'] + '.' + ext)
         dar = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     except:
@@ -803,11 +807,11 @@ def generate_vpy(the_way, the_file):
                  'import vapoursynth as vs\ncore = vs.core\n' \
                  'import havsfunc\nclip = core.lsmas.LWLibavSource(source="' + the_way['-path'].replace('\\', '/') + '/' + the_file + '.' \
                  + the_way['-ext'] + '", format="YUV420P8", stream_index=0, cache=0, prefer_hw=0)\n' \
-                                     'clip = core.std.SetFrameProps(clip, _Matrix=5)\n' \
-                                     'clip = clip if not core.text.FrameProps(clip,"_Transfer") else core.std.SetFrameProps(clip, _Transfer=5)\n' \
-                                     'clip = clip if not core.text.FrameProps(clip,"_Primaries") else core.std.SetFrameProps(clip, _Primaries=5)\n' \
-                                     'clip = core.std.SetFrameProp(clip=clip, prop="_ColorRange", intval=1)\n' \
-                                     'clip = core.std.AssumeFPS(clip=clip, fpsnum=' + ifps + ', fpsden=' + fpsden + ')\n' \
+                 'clip = core.std.SetFrameProps(clip, _Matrix=5)\n' \
+                 'clip = clip if not core.text.FrameProps(clip,"_Transfer") else core.std.SetFrameProps(clip, _Transfer=5)\n' \
+                 'clip = clip if not core.text.FrameProps(clip,"_Primaries") else core.std.SetFrameProps(clip, _Primaries=5)\n' \
+                 'clip = core.std.SetFrameProp(clip=clip, prop="_ColorRange", intval=1)\n' \
+                 'clip = core.std.AssumeFPS(clip=clip, fpsnum=' + ifps + ', fpsden=' + fpsden + ')\n' \
                  + deinterlace + \
                  'clip = havsfunc.QTGMC(Input=clip, Preset="Very Slow", InputType=1, TR2=' + source_noise_type + \
                  ', SourceMatch=3, Lossless=0, EZDenoise=' + denoise_level + \
