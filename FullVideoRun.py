@@ -795,8 +795,11 @@ def generate_vpy(the_way, the_file):
             ofps = '60000'
     denoise_level = '1.0'
     source_noise_type = '0'
+    sigma = '2.0'
     if the_way.get('-denoiselevel', null) != null:
         denoise_level = the_way['-denoiselevel']
+    if the_way.get('-noisesigma', null) != null:
+        sigma = the_way['-noisesigma']
     if the_way.get('-sourcenoisetype', null) != null:
         source_noise_type = the_way['-sourcenoisetype']
     decimate = ''
@@ -814,8 +817,8 @@ def generate_vpy(the_way, the_file):
                  'clip = core.std.AssumeFPS(clip=clip, fpsnum=' + ifps + ', fpsden=' + fpsden + ')\n' \
                  + deinterlace + \
                  'clip = havsfunc.QTGMC(Input=clip, Preset="Very Slow", InputType=1, TR2=' + source_noise_type + \
-                 ', SourceMatch=3, Lossless=0, EZDenoise=' + denoise_level + \
-                 ', NoisePreset="Slower", MatchPreset="Very Slow", MatchPreset2="Very Slow", Denoiser="KNLMeansCL")\n' \
+                 ', SourceMatch=1, Lossless=0, EZDenoise=' + denoise_level + \
+                 ', MatchPreset="Very Slow", MatchPreset2="Very Slow", Denoiser="KNLMeansCL", NoiseProcess=1, DenoiseMC=True, NoiseTR=2, Sigma=' + sigma + ')\n' \
                  + decimate + \
                  'clip = core.std.AssumeFPS(clip=clip, fpsnum=' + ofps + ', fpsden=' + fpsden + ')\nclip.set_output()\n'
     f_out_put = open(os.path.join(the_way['-path'], the_file + '.vpy'), 'w')
