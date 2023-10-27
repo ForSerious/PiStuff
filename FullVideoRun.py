@@ -550,6 +550,7 @@ def final_pass(filepath, filename):
             pt2 = 'pt2'
         if os.path.exists(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '_run.json')):
             os.remove(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '_run.json'))
+        remove_some_file(filepath, filepath['-file'] + pt2 + 'ff')
     return (True, out_path[1])
 
 
@@ -804,8 +805,7 @@ def generate_vpy(the_way, the_file):
     # if the_way.get('-decimate', null) != null:
     #     decimate = 'clip = core.vivtc.VDecimate(clip , cycle=5, chroma=0)\n'
     #     ofps = '24000'
-    the_script = 'import os\nimport sys\n' \
-                 'import vapoursynth as vs\ncore = vs.core\n' \
+    the_script = 'import os\nimport sys\nimport vapoursynth as vs\ncore = vs.core\n' \
                  'import havsfunc\nclip = core.lsmas.LWLibavSource(source="' + the_way['-path'].replace('\\', '/') + '/' + the_file + '.' \
                  + the_way['-ext'] + '", format="YUV420P8", stream_index=0, cache=0, prefer_hw=0)\n' \
                  'clip = core.std.SetFrameProps(clip, _Matrix=5)\n' \
@@ -873,6 +873,8 @@ def remove_some_file(filepath, filename):
             os.remove(os.path.join(filepath['-path'], filename[:-3] + 'vpy.mkv'))
         if os.path.exists(os.path.join(filepath['-path'], filename[:-2] + 'ff.mkv')):
             os.remove(os.path.join(filepath['-path'], filename[:-2] + 'ff.mkv'))
+        if os.path.exists(os.path.join(filepath['-path'], filename[:-2] + ' ff.mkv')):
+            os.remove(os.path.join(filepath['-path'], filename[:-2] + ' ff.mkv'))
 
 
 def get_json_state(filepath):
