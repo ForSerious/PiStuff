@@ -555,21 +555,22 @@ def final_pass(filepath, filename):
 
 def clean_images(file_path, final=False):
     if file_path.get('-clean', null) != null and (len(file_path['-folders']) > 1 or final is True):
-        del_start = time()
-        i_num = 0
-        the_dir = file_path['-folders'].popleft()
-        for fFile in generate_next_image(the_dir):
-            os.remove(fFile)
-            i_num = i_num + 1
-        os.rmdir(the_dir)
-        del_end = time()
-        print('Removed ' + str(i_num) + ' images.')
-        the_name = file_path['-file']
-        if file_path.get('-name', null) != null:
-            the_name = file_path['-name']
-        print(the_name + '  del time: ' + seconds_to_str(del_end - del_start))
-        if len(file_path['-folders']) > 0 and final is True:
-            clean_images(file_path, True)
+        if len(file_path['-folders']) >= 1:
+            del_start = time()
+            i_num = 0
+            the_dir = file_path['-folders'].popleft()
+            for fFile in generate_next_image(the_dir):
+                os.remove(fFile)
+                i_num = i_num + 1
+            os.rmdir(the_dir)
+            del_end = time()
+            print('Removed ' + str(i_num) + ' images.')
+            the_name = file_path['-file']
+            if file_path.get('-name', null) != null:
+                the_name = file_path['-name']
+            print(the_name + '  del time: ' + seconds_to_str(del_end - del_start))
+            if len(file_path['-folders']) > 0 and final is True:
+                clean_images(file_path, True)
 
 
 def read_options(optionslist):
