@@ -4,11 +4,8 @@ import re
 import subprocess
 import sys
 import traceback
-import json
 from datetime import timedelta
-from multiprocessing import Process, JoinableQueue
 from time import time, strftime, localtime
-from collections import deque
 
 
 DEBUG = False
@@ -39,7 +36,7 @@ def seconds_to_str(elapsed=None):
 def get_dar(the_way, ext):
     try:
         command = FFPROBE + ' -v error -show_entries stream=width,height,sa' \
-                            'mple_aspect_ratio,display_aspect_ratio -select_streams v:0 -of default=noprint_wrappers=1 "' + \
+                  'mple_aspect_ratio,display_aspect_ratio -select_streams v:0 -of default=noprint_wrappers=1 "' + \
                   os.path.join(the_way['-path'], the_way['-file'] + '.' + ext)
         dar = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     except:
@@ -88,8 +85,45 @@ def populate_options(file_path):
     return the_way
 
 
+def get_ext(ext):
+    if ext == 'png':
+        return '\\%6d.png'
+    else:
+        return '.' + ext
+
+
 def run_all_models(the_way):
-    # Fill it out.
+    the_models = ['aaa-10', 'aaa-9', 'ahq-10', 'ahq-11', 'ahq-12', 'alq-10', 'alq-12', 'alq-13', 'alqs-1', 'alqs-2',
+                  'amq-10', 'amq-12', 'amq-13', 'amqs-1', 'amqs-2', 'ddv-1', 'ddv-2', 'ddv-3', 'dtd-1', 'dtd-3',
+                  'dtd-4', 'dtds-1', 'dtds-2', 'dtv-1', 'dtv-3', 'dtv-4', 'dtvs-1', 'dtvs-2', 'gcg-5', 'ghq-5',
+                  'prap-2', 'prob-2', 'thd-3', 'thf-4']
+    the_models = ['amq-13', 'ahq-12']
+    for model in the_models:
+        try:
+            if not os.path.exists(os.path.join(the_way['-path'], the_way['-file'] + model)):
+                os.mkdir(os.path.join(the_way['-path'], the_way['-file'] + model))
+            if DEBUG:
+                print('Making folder: ')
+                print('"' + os.path.join(the_way['-file'] + model) + '"')
+        except OSError as exc:
+            if exc.errno != errno.EEXIST:
+                raise
+            pass
+    for model in the_models:
+        command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "'
+        if model == 'prap-2' or model == 'prob-2' or model == 'thd-3' or model == 'thf-4':
+            command = ''
+        else:
+            command = (command + os.path.join(the_way['-path'], the_way['-file'] + get_ext(the_way['-ext']))
+            + '" -sws_flags spline+accurate_rnd+full_chroma_int -color_trc 1 -colorspace 1 -color_primaries 1 -r ' +
+            the_way['-r'] + ' -ss ' + the_way['-ss'] + ' -filter_complex scale=w=' + the_way['-w'] + ':h=' + the_way['-h'] + ',setsar=1,tvai_up'
+            '=model=' + model + ':scale=' + the_way['-scale'] + ':w=' + the_way['-w'] + ':h=' + the_way['-h'] + ':ble'
+            'nd=' + the_way['-blend'] + ':device=0:vram=1:instances=1 -c:v png -pix_fmt rgb24 -frames:v 1 "' +
+            os.path.join(the_way['-path'], the_way['-file'] + model) + '\\%6d.png"')
+        if DEBUG:
+            print('The Command: ')
+            print(command)
+        subprocess.call(command)
     return True
 
 
@@ -120,6 +154,10 @@ if __name__ == '__main__':
             option = populate_options(dude)
             if option is not None:
                 option['-r'] = '23.976'
+                option['-scale'] = '2.5'
+                option['-blend'] = '0.0'
+                option['-ss'] = '00:00:33.333'
+                option['-t'] = '0.0'
                 run_all_models(option)
         end = time()
         print('Total time: ' + seconds_to_str(end - start))
