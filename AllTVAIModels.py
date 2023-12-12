@@ -69,13 +69,13 @@ def get_dar(the_way, ext):
     return str(width), str(height)
 
 
-def populate_options(file_path):
+def populate_options(file_path, out_path):
     ext = file_path[1][-3:]
     newpath = file_path[1][:-4]
     the_way = {}
     the_way['-path'] = file_path[0]
     the_way['-file'] = newpath
-    the_way['-out'] = newpath
+    the_way['-out'] = out_path
     dar = get_dar(the_way, ext)
     if DEBUG:
         print(dar)
@@ -100,8 +100,8 @@ def run_all_models(the_way):
     the_models = ['amq-13', 'ahq-12']
     for model in the_models:
         try:
-            if not os.path.exists(os.path.join(the_way['-path'], the_way['-file'] + model)):
-                os.mkdir(os.path.join(the_way['-path'], the_way['-file'] + model))
+            if not os.path.exists(os.path.join(the_way['-out'], the_way['-file'] + model)):
+                os.mkdir(os.path.join(the_way['-out'], the_way['-file'] + model))
             if DEBUG:
                 print('Making folder: ')
                 print('"' + os.path.join(the_way['-file'] + model) + '"')
@@ -117,9 +117,9 @@ def run_all_models(the_way):
             command = (command + os.path.join(the_way['-path'], the_way['-file'] + get_ext(the_way['-ext']))
             + '" -sws_flags spline+accurate_rnd+full_chroma_int -color_trc 1 -colorspace 1 -color_primaries 1 -r ' +
             the_way['-r'] + ' -ss ' + the_way['-ss'] + ' -filter_complex scale=w=' + the_way['-w'] + ':h=' + the_way['-h'] + ',setsar=1,tvai_up'
-            '=model=' + model + ':scale=' + the_way['-scale'] + ':w=' + the_way['-w'] + ':h=' + the_way['-h'] + ':ble'
+            '=model=' + model + ':scale=' + the_way['-scale'] + ':w=' + the_way['-w2'] + ':h=' + the_way['-h2'] + ':ble'
             'nd=' + the_way['-blend'] + ':device=0:vram=1:instances=1 -c:v png -pix_fmt rgb24 -frames:v 1 "' +
-            os.path.join(the_way['-path'], the_way['-file'] + model) + '\\%6d.png"')
+            os.path.join(the_way['-out'], the_way['-file'] + model) + '\\%6d.png"')
         if DEBUG:
             print('The Command: ')
             print(command)
@@ -127,39 +127,68 @@ def run_all_models(the_way):
     return True
 
 
+def set_scale(the_way):
+    scale = int(the_way['-scale'])
+    width = int(the_way['-w']) * scale
+    height = int(the_way['-h']) * scale
+    the_way['-w2'] = str(int((width + width) % 2))
+    the_way['-h2'] = str(int((height + height) % 2))
+    return the_way
+
+
 if __name__ == '__main__':
-    if len(sys.argv) <= 1:
+    input_file_path = null
+    output_file_path = null
+    input_time_stamp = null
+    input_scale = null
+    input_rate = null
+    if len(sys.argv) >= 1:
+        sys.argv.reverse()
+        while sys.argv.__len__() > 0:
+            argument = sys.argv.pop()
+            if argument == '-input':
+                input_file_path = sys.argv.pop()
+            if argument == '-output':
+                output_file_path = sys.argv.pop()
+            if argument == '-time':
+                input_time_stamp = sys.argv.pop()
+            if argument == '-scale':
+                input_scale = sys.argv.pop()
+            if argument == '-rate':
+                input_rate = sys.argv.pop()
+        print('input_file_path: ' + input_file_path)
+        print('output_file_path: ' + output_file_path)
+        print('input_time_stamp: ' + input_time_stamp)
+        if input_file_path == null:
+            print('-input needs a path to a video file')
+            sys.exit(2)
+        if output_file_path == null:
+            print('-output needs a path')
+            sys.exit(2)
+        if input_time_stamp == null:
+            print('-time was not set. Defaulting to time of 00:00:30.333')
+            input_time_stamp = '00:00:30.333'
+        if input_scale == null:
+            print('-scale was not set. Defaulting to 2')
+            input_scale = '2'
+        if input_rate == null:
+            print('-rate was not set. Defaulting to 23.976')
+            input_rate = '23.976'
         start = time()
-        print('Reading folders.')
-        artistfile = open(FOLDERS, 'r', -1, 'utf-8')
-        artistlist = artistfile.readlines()
-        dirs = []
-        for artist in artistlist:
-            if DEBUG:
-                print(artist.strip())
-            dirs.append(PREDIR + artist.strip())
-        qTheStack = []
-        for currentPath in dirs:
-            for wFile in generate_next_file(currentPath):
-                qTheStack.append((wFile[0], wFile[1]))
-        if DEBUG:
-            for elem in qTheStack:
-                print(elem)
-        itemcount = 0
-        printcount = 1001
-        bstart = time()
-        OptionsStack = []
-        AmountLoop = []
-        for dude in qTheStack:
-            option = populate_options(dude)
+        if os.path.exists(input_file_path):
+            dude = os.path.split(input_file_path)
+            option = populate_options(dude, output_file_path)
             if option is not None:
-                option['-r'] = '23.976'
-                option['-scale'] = '2.5'
+                option['-r'] = input_rate
+                option['-scale'] = input_scale
                 option['-blend'] = '0.0'
-                option['-ss'] = '00:00:33.333'
+                option['-ss'] = input_time_stamp
                 option['-t'] = '0.0'
+                option = set_scale(option)
                 run_all_models(option)
-        end = time()
-        print('Total time: ' + seconds_to_str(end - start))
+            end = time()
+            print('Total time: ' + seconds_to_str(end - start))
+        else:
+            print('File does not exist.')
     else:
-        print('Sorry, not going to work.')
+        print('No input path.')
