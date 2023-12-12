@@ -128,7 +128,7 @@ def run_all_models(the_way):
 
 
 def set_scale(the_way):
-    scale = int(the_way['-scale'])
+    scale = float(the_way['-scale'])
     width = int(the_way['-w']) * scale
     height = int(the_way['-h']) * scale
     the_way['-w2'] = str(int((width + width) % 2))
