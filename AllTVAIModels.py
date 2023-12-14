@@ -95,9 +95,10 @@ def get_ext(ext):
 def run_all_models(the_way):
     the_models = ['aaa-10', 'aaa-9', 'ahq-10', 'ahq-11', 'ahq-12', 'alq-10', 'alq-12', 'alq-13', 'alqs-1', 'alqs-2',
                   'amq-10', 'amq-12', 'amq-13', 'amqs-1', 'amqs-2', 'ddv-1', 'ddv-2', 'ddv-3', 'dtd-1', 'dtd-3',
-                  'dtd-4', 'dtds-1', 'dtds-2', 'dtv-1', 'dtv-3', 'dtv-4', 'dtvs-1', 'dtvs-2', 'gcg-5', 'ghq-5',
-                  'prap-2', 'prob-2', 'thd-3', 'thf-4']
+                  'dtd-4', 'dtds-1', 'dtds-2', 'dtv-1', 'dtv-3', 'dtv-4', 'dtvs-1', 'dtvs-2', 'gcg-5', 'ghq-5']
     the_models = ['amq-13', 'ahq-12']
+    advanced_models = ['prob-1-Auto', 'prob-1', 'prob-2-Auto', 'prob-2', 'prob-3-Auto', 'prob-3', 'iris-1-Auto',
+                       'iris-2-Auto']
     for model in the_models:
         try:
             if not os.path.exists(os.path.join(the_way['-out'], the_way['-file'] + model)):
@@ -109,17 +110,60 @@ def run_all_models(the_way):
             if exc.errno != errno.EEXIST:
                 raise
             pass
+    for a_model in advanced_models:
+        try:
+            if not os.path.exists(os.path.join(the_way['-out'], the_way['-file'] + a_model)):
+                os.mkdir(os.path.join(the_way['-out'], the_way['-file'] + a_model))
+            if DEBUG:
+                print('Making folder: ')
+                print('"' + os.path.join(the_way['-file'] + a_model) + '"')
+        except OSError as exc:
+            if exc.errno != errno.EEXIST:
+                raise
+            pass
     for model in the_models:
         command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "'
-        if model == 'prap-2' or model == 'prob-2' or model == 'thd-3' or model == 'thf-4':
-            command = ''
-        else:
-            command = (command + os.path.join(the_way['-path'], the_way['-file'] + get_ext(the_way['-ext']))
-            + '" -sws_flags spline+accurate_rnd+full_chroma_int -color_trc 1 -colorspace 1 -color_primaries 1 -r ' +
-            the_way['-r'] + ' -ss ' + the_way['-ss'] + ' -filter_complex scale=w=' + the_way['-w'] + ':h=' + the_way['-h'] + ',setsar=1,tvai_up'
-            '=model=' + model + ':scale=' + the_way['-scale'] + ':w=' + the_way['-w2'] + ':h=' + the_way['-h2'] + ':ble'
-            'nd=' + the_way['-blend'] + ':device=0:vram=1:instances=1 -c:v png -pix_fmt rgb24 -frames:v 1 "' +
-            os.path.join(the_way['-out'], the_way['-file'] + model) + '\\%6d.png"')
+        command = (command + os.path.join(the_way['-path'], the_way['-file'] + get_ext(the_way['-ext'])) + '" -sws_fl'
+            'ags spline+accurate_rnd+full_chroma_int -color_trc 1 -colorspace 1 -color_primaries 1 -r ' + the_way['-r']
+            + ' -ss ' + the_way['-ss'] + ' -filter_complex scale=w=' + the_way['-w'] + ':h=' + the_way['-h'] + ',setsa'
+            'r=1,tvai_up=model=' + model + ':scale=' + the_way['-scale'] + ':w=' + the_way['-w2'] + ':h=' +
+            the_way['-h2'] + ':blend=' + the_way['-blend'] + ':device=0:vram=1:instances=1 -c:v png -pix_fmt rgb24 -fr'
+            'ames:v 1 "' + os.path.join(the_way['-out'], the_way['-file'] + model) + '\\%6d.png"')
+        if DEBUG:
+            print('The Command: ')
+            print(command)
+        subprocess.call(command)
+    for ad_model in advanced_models:
+        command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + os.path.join(the_way['-path'],
+        the_way['-file'] + get_ext(the_way['-ext'])) + ('" -sws_flags spline+accurate_rnd+full_chroma_int -color_trc 1'
+        ' -colorspace 1 -color_primaries 1 -r ') + the_way['-r'] + ' -ss ' + the_way['-ss'] + (' -filter_complex scale'
+        '=w=') + the_way['-w'] + ':h=' + the_way['-h'] + ',setsar=1,tvai_up=model='
+        end_command = (the_way['-blend'] + ':device=0:vram=1:instances=1 -c:v png -pix_fmt rgb24 -frames:v 1 "' +
+        os.path.join(the_way['-out'], the_way['-file'] + ad_model) + '\\%6d.png"')
+        if ad_model == 'prob-1-Auto':
+            command = (command + 'prob-1:scale=' + the_way['-scale'] + ':w=' + the_way['-w2'] + ':h=' + the_way['-h2'] +
+                ':preblur=0:noise=0:details=0:halo=0:blur=0:compression=0:estimate=8:blend=' + end_command)
+        if ad_model == 'prob-2-Auto':
+            command = (command + 'prob-2:scale=' + the_way['-scale'] + ':w=' + the_way['-w2'] + ':h=' + the_way['-h2'] +
+                ':preblur=0:noise=0:details=0:halo=0:blur=0:compression=0:estimate=8:blend=' + end_command)
+        if ad_model == 'prob-3-Auto':
+            command = (command + 'prob-3:scale=' + the_way['-scale'] + ':w=' + the_way['-w2'] + ':h=' + the_way['-h2'] +
+                ':preblur=0:noise=0:details=0:halo=0:blur=0:compression=0:estimate=8:blend=' + end_command)
+        if ad_model == 'iris-1-Auto':
+            command = (command + 'iris-1:scale=' + the_way['-scale'] + ':w=' + the_way['-w2'] + ':h=' + the_way['-h2'] +
+                ':preblur=0:noise=0:details=0:halo=0:blur=0:compression=0:estimate=8:blend=' + end_command)
+        if ad_model == 'iris-2-Auto':
+            command = (command + 'iris-2:scale=' + the_way['-scale'] + ':w=' + the_way['-w2'] + ':h=' + the_way['-h2'] +
+                ':preblur=0:noise=0:details=0:halo=0:blur=0:compression=0:estimate=8:blend=' + end_command)
+        if ad_model == 'prob-3':
+            command = (command + 'prob-3:scale=' + the_way['-scale'] + ':w=' + the_way['-w2'] + ':h=' + the_way['-h2'] +
+                ':preblur=-0.8:noise=0:details=0.12:halo=0:blur=0.2:compression=0.5:blend=' + end_command)
+        if ad_model == 'prob-2':
+            command = (command + 'prob-2:scale=' + the_way['-scale'] + ':w=' + the_way['-w2'] + ':h=' + the_way['-h2'] +
+                ':preblur=-0.8:noise=0:details=0.12:halo=0:blur=0.2:compression=0.5:blend=' + end_command)
+        if ad_model == 'prob-1':
+            command = (command + 'prob-1:scale=' + the_way['-scale'] + ':w=' + the_way['-w2'] + ':h=' + the_way['-h2'] +
+                ':preblur=-0.8:noise=0:details=0.12:halo=0:blur=0.2:compression=0.5:blend=' + end_command)
         if DEBUG:
             print('The Command: ')
             print(command)
