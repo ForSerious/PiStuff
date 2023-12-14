@@ -186,6 +186,7 @@ if __name__ == '__main__':
     input_time_stamp = null
     input_scale = null
     input_rate = null
+    blend = '0.0'
     if len(sys.argv) >= 1:
         sys.argv.reverse()
         while sys.argv.__len__() > 0:
@@ -200,6 +201,8 @@ if __name__ == '__main__':
                 input_scale = sys.argv.pop()
             if argument == '-rate':
                 input_rate = sys.argv.pop()
+            if argument == '-blend':
+                blend = sys.argv.pop()
         print('input_file_path: ' + input_file_path)
         print('output_file_path: ' + output_file_path)
         print('input_time_stamp: ' + input_time_stamp)
@@ -225,7 +228,7 @@ if __name__ == '__main__':
             if option is not None:
                 option['-r'] = input_rate
                 option['-scale'] = input_scale
-                option['-blend'] = '0.0'
+                option['-blend'] = blend
                 option['-ss'] = input_time_stamp
                 option['-t'] = '0.0'
                 option = set_scale(option)
