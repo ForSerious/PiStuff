@@ -550,26 +550,28 @@ def final_pass(filepath, filename):
             pt2 = 'pt2'
         if os.path.exists(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '_run.json')):
             os.remove(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '_run.json'))
+        remove_some_file(filepath, filepath['-file'] + pt2 + 'ff')
     return (True, out_path[1])
 
 
 def clean_images(file_path, final=False):
     if file_path.get('-clean', null) != null and (len(file_path['-folders']) > 1 or final is True):
-        del_start = time()
-        i_num = 0
-        the_dir = file_path['-folders'].popleft()
-        for fFile in generate_next_image(the_dir):
-            os.remove(fFile)
-            i_num = i_num + 1
-        os.rmdir(the_dir)
-        del_end = time()
-        print('Removed ' + str(i_num) + ' images.')
-        the_name = file_path['-file']
-        if file_path.get('-name', null) != null:
-            the_name = file_path['-name']
-        print(the_name + '  del time: ' + seconds_to_str(del_end - del_start))
-        if len(file_path['-folders']) > 0 and final is True:
-            clean_images(file_path, True)
+        if len(file_path['-folders']) >= 1:
+            del_start = time()
+            i_num = 0
+            the_dir = file_path['-folders'].popleft()
+            for fFile in generate_next_image(the_dir):
+                os.remove(fFile)
+                i_num = i_num + 1
+            os.rmdir(the_dir)
+            del_end = time()
+            print('Removed ' + str(i_num) + ' images.')
+            the_name = file_path['-file']
+            if file_path.get('-name', null) != null:
+                the_name = file_path['-name']
+            print(the_name + '  del time: ' + seconds_to_str(del_end - del_start))
+            if len(file_path['-folders']) > 0 and final is True:
+                clean_images(file_path, True)
 
 
 def read_options(optionslist):
@@ -765,9 +767,9 @@ def get_duration(the_way, ext):
 
 def generate_vpy(the_way, the_file):
     deinterlace = ''
+    TFF = 'True'
     if the_way.get('-deinterlace', null) != null:
         field = '0'
-        TFF = 'True'
         if the_way.get('-bottomfield', null) != null:
             field = '1'
             TFF = 'False'
@@ -798,6 +800,7 @@ def generate_vpy(the_way, the_file):
     sigma = '2.0'
     if the_way.get('-denoiselevel', null) != null:
         denoise_level = the_way['-denoiselevel']
+        sigma = the_way['-denoiselevel']
     if the_way.get('-noisesigma', null) != null:
         sigma = the_way['-noisesigma']
     if the_way.get('-sourcenoisetype', null) != null:
@@ -806,8 +809,7 @@ def generate_vpy(the_way, the_file):
     # if the_way.get('-decimate', null) != null:
     #     decimate = 'clip = core.vivtc.VDecimate(clip , cycle=5, chroma=0)\n'
     #     ofps = '24000'
-    the_script = 'import os\nimport sys\n' \
-                 'import vapoursynth as vs\ncore = vs.core\n' \
+    the_script = 'import os\nimport sys\nimport vapoursynth as vs\ncore = vs.core\n' \
                  'import havsfunc\nclip = core.lsmas.LWLibavSource(source="' + the_way['-path'].replace('\\', '/') + '/' + the_file + '.' \
                  + the_way['-ext'] + '", format="YUV420P8", stream_index=0, cache=0, prefer_hw=0)\n' \
                  'clip = core.std.SetFrameProps(clip, _Matrix=5)\n' \
@@ -816,10 +818,8 @@ def generate_vpy(the_way, the_file):
                  'clip = core.std.SetFrameProp(clip=clip, prop="_ColorRange", intval=1)\n' \
                  'clip = core.std.AssumeFPS(clip=clip, fpsnum=' + ifps + ', fpsden=' + fpsden + ')\n' \
                  + deinterlace + \
-                 'clip = havsfunc.QTGMC(Input=clip, Preset="Very Slow", InputType=1, TR2=' + source_noise_type + \
-                 ', SourceMatch=1, Lossless=0, EZDenoise=' + denoise_level + \
-                 ', MatchPreset="Very Slow", MatchPreset2="Very Slow", Denoiser="KNLMeansCL", NoiseProcess=1, DenoiseMC=True, NoiseTR=2, Sigma=' + sigma + ')\n' \
-                 + decimate + \
+                 'clip = havsfunc.QTGMC(Input=clip, Preset="Very Slow", TFF=' + TFF + ', NoiseProcess=1, NoiseRestore=0.0, DenoiseMC=True, NoiseTR=2, Sigma=' + sigma + ')\n' \
+                 + decimate + 'clip = clip[::2]\n' \
                  'clip = core.std.AssumeFPS(clip=clip, fpsnum=' + ofps + ', fpsden=' + fpsden + ')\nclip.set_output()\n'
     f_out_put = open(os.path.join(the_way['-path'], the_file + '.vpy'), 'w')
     f_out_put.write(the_script)
