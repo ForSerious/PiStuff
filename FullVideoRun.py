@@ -320,7 +320,8 @@ def apo_pass(filepath, filename):
 
 
 def get_r(filepath):
-    if filepath.get('-apo', null) != null:
+    if (filepath.get('-apo', null) != null or filepath.get('-apf', null) != null or filepath.get('-chr', null) != null
+            or filepath.get('-chf', null) != null):
         if filepath['-r'] == '23.976' or filepath['-r'] == '24':
             val = (float(filepath['-r']) * 2.5)
         else:
