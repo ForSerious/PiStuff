@@ -831,6 +831,7 @@ def make_merge_command(the_way, filename):
     the_command = MKVMERGE + ' ' + the_way['-mergecommand'].replace('~', ' ')
     the_command = the_command.replace('rxx1', os.path.join(the_way['-path'], filename + '.mkv'))
     the_command = the_command.replace('rxxPt1', os.path.join(the_way['-path'], filename + '.mkv'))
+    the_command = the_command.replace('rxxOrigin', os.path.join(the_way['-path'], the_way['-file'] + '.mkv'))
     # the_command = the_command.replace('rxx2', os.path.join(the_way['-path'], the_way['-mkaname'] + '.mka'))
     the_command = the_command.replace('rxx2', the_way['-mkapath'])
     the_command = the_command.replace('rxxMka', the_way['-mkapath'])
