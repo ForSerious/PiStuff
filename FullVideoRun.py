@@ -11,6 +11,7 @@ from time import time, strftime, localtime
 from collections import deque
 
 DEBUG = False
+BETA = False
 CRF = '22'
 null = 'null'
 FFMPEG = '"C:\\Program Files (x86)\\SVP 4\\utils\\ffmpeg.exe"'
@@ -211,6 +212,12 @@ def amq_pass(filepath, filename):
                   os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
     elif filepath.get('-nyx', null) != null:
         n_version = filepath.get('-nyxver', '2')
+        if n_version == '2':
+            n_version = 'nyx-2'
+        if n_version == '1':
+            n_version = 'nyx-1'
+        if n_version == '3':
+            n_version = 'nxf-1'
         n_comp = filepath.get('-nyxcomp', '0')
         n_details = filepath.get('-nyxdetails', '0')
         n_blur = filepath.get('-nyxblur', '0')
@@ -224,7 +231,7 @@ def amq_pass(filepath, filename):
         command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + \
                   os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -sws_flags spline+accurate_rnd' \
                   '+full_chroma_int -r ' + filepath['-r'] + ' -filter_complex scale=w=' + filepath['-w'] + ':h=' + \
-                  filepath['-h'] + ',setsar=1,tvai_up=model=nyx-' + n_version + ':scale=1:preblur=' + n_preblur + ':noise=' + n_noise + \
+                  filepath['-h'] + ',setsar=1,tvai_up=model=' + n_version + ':scale=1:preblur=' + n_preblur + ':noise=' + n_noise + \
                   ':details=' + n_details + ':halo=' + n_halo + ':blur=' + n_blur + ':compression=' + n_comp + ':blend=' + n_blend + n_auto + ':dev' \
                   'ice=0:vram=1:instances=1 -c:v png -pix_fmt rgb24 "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
     else:
@@ -241,7 +248,11 @@ def amq_pass(filepath, filename):
             print('The Command: ')
             print(command)
         if get_json_state(filepath).get('amq', null) == null:
-            subprocess.call(command)
+            if BETA:
+                beta_env = make_beta_environment_variable()
+                subprocess.call(command, env=beta_env)
+            else:
+                subprocess.call(command)
             save_json_state(filepath, 'amq')
         filepath['-ext'] = 'png'
         if filepath.get('-clean', null) != null:
@@ -297,7 +308,11 @@ def apo_pass(filepath, filename):
             print('The Command: ')
             print(command)
         if get_json_state(filepath).get('apo', null) == null:
-            subprocess.call(command)
+            if BETA:
+                beta_env = make_beta_environment_variable()
+                subprocess.call(command, env=beta_env)
+            else:
+                subprocess.call(command)
             save_json_state(filepath, 'apo')
         filepath['-ext'] = 'png'
         if filepath.get('-clean', null) != null:
@@ -370,7 +385,11 @@ def ahq_pass(filepath, filename):
             print('The Command: ')
             print(command)
         if get_json_state(filepath).get('ahq', null) == null:
-            subprocess.call(command)
+            if BETA:
+                beta_env = make_beta_environment_variable()
+                subprocess.call(command, env=beta_env)
+            else:
+                subprocess.call(command)
             save_json_state(filepath, 'ahq')
         filepath['-ext'] = 'png'
         if filepath.get('-clean', null) != null:
@@ -411,7 +430,7 @@ def prot_pass(filepath, filename):
             raise
         pass
     scale = '2.25'
-    theModel = 'prob-3'
+    theModel = 'prob-4'
     if filepath.get('-iris', 'null') != null:
         theModel = 'iris-1'
     blend = '0.2'
@@ -423,7 +442,7 @@ def prot_pass(filepath, filename):
         command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -thread_queue_size 4096 -i "' \
                   + os.path.join(filepath['-path'], filename + fext) + '"' + filt + ' -filter_complex scale=w=' + \
                   filepath['-w'] + ':h=' + filepath['-h'] + ',setsar=1,tvai_up=model=' + theModel + ':scale=' + scale + ':w=0:h=0:preblur=' \
-                  '0:noise=0:details=0:halo=0:blur=0:compression=0:estimate=20:blend=' + blend + ':device=0:vram=1:instances=1,scale=w=1920:h=1' \
+                  '0:noise=0:details=0:halo=0:blur=0:compression=0:estimate=8:blend=' + blend + ':device=0:vram=1:instances=1,scale=w=1920:h=1' \
                   '080:flags=lanczos:threads=0:force_original_aspect_ratio=decrease,pad=1920:1080:-1:-1:color' \
                   '=black -c:v png -pix_fmt rgb24 "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
     else:
@@ -447,7 +466,7 @@ def prot_pass(filepath, filename):
         if filepath.get('-protpreblur', 'null') != null:
             prot_preblur = filepath['-protpreblur']
         if filepath.get('-protrta', 'null') != null:
-            prot_r_t_a = ':estimate=20'
+            prot_r_t_a = ':estimate=8'
         command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' \
                   + os.path.join(filepath['-path'], filename + fext) + '"' + filt + ' -filter_complex scale=w=' + \
                   filepath['-w'] + ':h=' + filepath['-h'] + ',setsar=1,tvai_up=model=' + theModel + ':scale=' + scale + ':w=1920:h=1080:prebl' \
@@ -460,7 +479,11 @@ def prot_pass(filepath, filename):
             print('The Command: ')
             print(command)
         if get_json_state(filepath).get('prot', null) == null:
-            subprocess.call(command)
+            if BETA:
+                beta_env = make_beta_environment_variable()
+                subprocess.call(command, env=beta_env)
+            else:
+                subprocess.call(command)
             save_json_state(filepath, 'prot')
         filepath['-ext'] = 'png'
         if filepath.get('-clean', null) != null:
@@ -902,6 +925,12 @@ def save_json_state(filepath, what_pass):
     state[what_pass] = 'done'
     outfile = open(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '_run.json'), 'w')
     json.dump(state, outfile)
+
+
+def make_beta_environment_variable():
+    beta_env = os.environ.copy()
+    beta_env["TVAI_MODEL_DIR"] = 'C:\\ProgramData\\Topaz Labs LLC\\Topaz Video AI Beta\\models'
+    return beta_env
 
 
 if __name__ == '__main__':
