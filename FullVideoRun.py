@@ -465,7 +465,7 @@ def prot_pass(filepath, filename):
             prot_halo = filepath['-prothalo']
         if filepath.get('-protpreblur', 'null') != null:
             prot_preblur = filepath['-protpreblur']
-        if filepath.get('-protrta', 'null') != null:
+        if filepath.get('-protrta', 'null') != null or filepath.get('-protauto', 'null') != null:
             prot_r_t_a = ':estimate=8'
         command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' \
                   + os.path.join(filepath['-path'], filename + fext) + '"' + filt + ' -filter_complex scale=w=' + \
