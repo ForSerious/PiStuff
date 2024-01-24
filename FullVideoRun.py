@@ -523,8 +523,7 @@ def final_pass(filepath, filename):
     try:
         command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -framerate ' + (get_r(filepath)[4:]) + ' -y -i "' + \
                   os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -c:v libx265 -crf ' + CRF + ' -pix_fmt' \
-                   ' yuv420p -preset slow -x265-params aq-mode=3 -sws_flags spline+accurate_rnd+full_chroma_int -vf "colo' \
-                   'rspace=bt709:iall=bt601-6-625:fast=1" -color_range 1 -colorspace 1 -color_primaries 1 -color_trc 1' \
+                   ' yuv420p -preset slow -x265-params aq-mode=3 -sws_flags spline+accurate_rnd+full_chroma_int -vf "colorspace=bt709:iall=bt601-6-625:fast=0"' \
                    ' "' + os.path.join(out_path[0], out_path[1] + '.mkv') + '"'
         if filepath['-ext'] != 'png':
             command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + \
