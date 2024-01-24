@@ -208,7 +208,7 @@ def amq_pass(filepath, filename):
                   os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -sws_flags spline+accurate_rnd' \
                   '+full_chroma_int -r ' + filepath['-r'] + ' -filter_complex scale=w=' + filepath['-w'] + ':h=' + \
                   filepath['-h'] + ',setsar=1,tvai_up=model=thf-4:scale=1.0:w=' + filepath['-w'] + ':h=' + filepath['-h'] + \
-                  ':noise=' + t_noise + ':blur=' + t_blur + ':compression=' + t_comp + ':device=0:vram=1:instances=1 -c:v png -pix_fmt rgb24 "' + \
+                  ':noise=' + t_noise + ':blur=' + t_blur + ':compression=' + t_comp + ':device=0:vram=1:instances=1 -c:v png -compression_level 2 -pred mixed -pix_fmt rgb24 "' + \
                   os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
     elif filepath.get('-nyx', null) != null:
         n_version = filepath.get('-nyxver', '2')
@@ -233,7 +233,7 @@ def amq_pass(filepath, filename):
                   '+full_chroma_int -r ' + filepath['-r'] + ' -filter_complex scale=w=' + filepath['-w'] + ':h=' + \
                   filepath['-h'] + ',setsar=1,tvai_up=model=' + n_version + ':scale=1:preblur=' + n_preblur + ':noise=' + n_noise + \
                   ':details=' + n_details + ':halo=' + n_halo + ':blur=' + n_blur + ':compression=' + n_comp + ':blend=' + n_blend + n_auto + ':dev' \
-                  'ice=0:vram=1:instances=1 -c:v png -pix_fmt rgb24 "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
+                  'ice=0:vram=1:instances=1 -c:v png -compression_level 2 -pred mixed -pix_fmt rgb24 "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
     else:
         am = 'amq-13'
         if filepath.get('-high', null) != null:
@@ -242,7 +242,7 @@ def amq_pass(filepath, filename):
                   os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -sws_flags spline+accurate_rnd+full_chroma_in' \
                   't -color_trc 1 -colorspace 1 -color_primaries 1 -r ' + filepath['-r'] + ' -filter_complex scale=w=' + filepath['-w'] + ':h=' + filepath['-h'] + ',' \
                   'setsar=1,tvai_up=model=' + am + ':scale=1.0:w=' + filepath['-w'] + ':h=' + filepath['-h'] + ':blend=' + blend + ':device=0:vra' \
-                  'm=1:instances=1 -c:v png -pix_fmt rgb24 "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
+                  'm=1:instances=1 -c:v png -compression_level 2 -pred mixed -pix_fmt rgb24 "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
     try:
         if DEBUG:
             print('The Command: ')
@@ -303,7 +303,7 @@ def apo_pass(filepath, filename):
         command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin' \
                   + frame + ' -y -i "' + os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -s' \
                   'ws_flags spline+accurate_rnd+full_chroma_int -filter_complex tvai_fi=model=' + model + ':slowmo=2.5:rdt=0.000001:device=0:vram=1:in' \
-                  'stances=0 -c:v png -pix_fmt rgb24 "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
+                  'stances=0 -c:v png -compression_level 2 -pred mixed -pix_fmt rgb24 "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
         if DEBUG:
             print('The Command: ')
             print(command)
@@ -378,7 +378,7 @@ def ahq_pass(filepath, filename):
               '_rnd+full_chroma_int -color_trc 1 -colorspace 1 -color_primaries 1 -filter_complex scale=w=' + \
               filepath['-w'] + ':h=' + filepath['-h'] + ',setsar=1,tvai_up=model=' + model + ':scale=' + scale + ':w=1920:h=1080:blend=' + blend + ':device' \
               '=0:vram=1:instances=1,scale=w=1920:h=1080:flags=lanczos:threads=0:force_original_aspect_ratio=decrease,p' \
-              'ad=1920:1080:-1:-1:color=black -c:v png -pix_fmt rgb24  "' + os.path.join(out_path[0], out_path[1]) + \
+              'ad=1920:1080:-1:-1:color=black -c:v png -compression_level 2 -pred mixed -pix_fmt rgb24  "' + os.path.join(out_path[0], out_path[1]) + \
               '\\%6d.png"'
     try:
         if DEBUG:
@@ -444,7 +444,7 @@ def prot_pass(filepath, filename):
                   filepath['-w'] + ':h=' + filepath['-h'] + ',setsar=1,tvai_up=model=' + theModel + ':scale=' + scale + ':w=0:h=0:preblur=' \
                   '0:noise=0:details=0:halo=0:blur=0:compression=0:estimate=8:blend=' + blend + ':device=0:vram=1:instances=1,scale=w=1920:h=1' \
                   '080:flags=lanczos:threads=0:force_original_aspect_ratio=decrease,pad=1920:1080:-1:-1:color' \
-                  '=black -c:v png -pix_fmt rgb24 "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
+                  '=black -c:v png -compression_level 2 -pred mixed -pix_fmt rgb24 "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
     else:
         prot_preblur = '-0.06'
         prot_noise = '0'
@@ -473,7 +473,7 @@ def prot_pass(filepath, filename):
                   'ur=' + prot_preblur + ':noise=' + prot_noise + ':details=' + prot_details + ':halo=' + prot_halo + ':blur=' + \
                   prot_blur + ':compression=' + prot_compression + prot_r_t_a + ':blend=' + blend + ':device=0:vram=1:instances=1,scale=' \
                   'w=1920:h=1080:flags=lanczos:threads=0:force_original_aspect_ratio=decrease,pad=1920:1080:-1:-1:color' \
-                  '=black -c:v png -pix_fmt rgb24 "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
+                  '=black -c:v png -compression_level 2 -pred mixed -pix_fmt rgb24 "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
     try:
         if DEBUG:
             print('The Command: ')
@@ -524,7 +524,7 @@ def final_pass(filepath, filename):
         command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -framerate ' + (get_r(filepath)[4:]) + ' -y -i "' + \
                   os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -c:v libx265 -crf ' + CRF + ' -pix_fmt' \
                    ' yuv420p -preset slow -x265-params aq-mode=3 -sws_flags spline+accurate_rnd+full_chroma_int -vf "colo' \
-                   'rspace=bt709:iall=bt601-6-525:fast=1" -color_range 1 -colorspace 1 -color_primaries 1 -color_trc 1' \
+                   'rspace=bt709:iall=bt601-6-625:fast=1" -color_range 1 -colorspace 1 -color_primaries 1 -color_trc 1' \
                    ' "' + os.path.join(out_path[0], out_path[1] + '.mkv') + '"'
         if filepath['-ext'] != 'png':
             command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + \
