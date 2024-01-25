@@ -6,9 +6,9 @@ import traceback
 from datetime import timedelta
 from time import time, strftime, localtime
 
-DEBUG = True
+DEBUG = False
 null = 'null'
-FFPROBE = '"G:\\Program Files (x86)\\SVP 4\\utils\\ffprobe.exe"'
+FFPROBE = '"G:\\Program Files\\MKVToolNix\\mkvinfo.exe"'
 MKVMERGE = '"G:\\Program Files\\MKVToolNix\\mkvpropedit.exe"'
 PREDIR = 'E:\\'
 FOLDERS = 'E:\\Dump\\The Bourne Supremacy\\theList.txt'
@@ -29,10 +29,9 @@ def seconds_to_str(elapsed=None):
 
 
 def get_dar(the_way):
+    some_count = 0
     try:
-        command = FFPROBE + (' -v error -show_entries stream=color_range,color_space,color_transfer,color_primaries'
-                             ' -select_streams v:0 -of default=noprint_wrappers=1 "') + \
-                  os.path.join(the_way[0], the_way[1]) + '"'
+        command = FFPROBE + ' "' + os.path.join(the_way[0], the_way[1]) + '"'
         if DEBUG:
             print(command)
         dar = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -44,30 +43,33 @@ def get_dar(the_way):
     firstWidth = None
     firstHeight = None
     for item in split_dar:
-        more_split = re.split('=', item)
-        if more_split[0] == 'color_range':
-            firstWidth = more_split[1]
-        if more_split[0] == 'color_primaries':
-            firstHeight = more_split[1]
+        more_split = re.split('\+', item)
+        if len(more_split) > 1:
+            if more_split[1] == ' Color matrix coefficients: 1':
+                firstWidth = more_split[1]
+            if more_split[1] == ' Color primaries: 1':
+                firstHeight = more_split[1]
     if DEBUG:
         print(firstWidth)
         print(firstHeight)
-    if firstWidth != 'unknown' and firstHeight != 'unknown':
-        editCommand = MKVMERGE + ' "' + os.path.join(the_way[0], the_way[1]) + ('" -e track:1 -d color-matrix-coefficients'
-                      ' -d color-range -d color-transfer-characteristics -d color-primaries')
+    if firstWidth is not None and firstHeight is not None:
+        editCommand = MKVMERGE + ' "' + os.path.join(the_way[0], the_way[1]) + ('" -e track:1 -d color-matrix-coeff'
+                      'icients -d color-range -d color-transfer-characteristics -d color-primaries')
         if DEBUG:
             print(editCommand)
         try:
-            print(editCommand)
+            some_count = some_count + 1
             subprocess.call(editCommand)
         except:
             return traceback.format_exc()
+    return some_count
 
 
 
 if __name__ == '__main__':
     if len(sys.argv) <= 1:
         start = time()
+        some_other_count = 0
         print('Reading folders.')
         artistfile = open(FOLDERS, 'r', -1, 'utf-8')
         artistlist = artistfile.readlines()
@@ -84,8 +86,14 @@ if __name__ == '__main__':
             for elem in qTheStack:
                 print(elem)
         for dude in qTheStack:
-            get_dar(dude)
+            some_other_count = some_other_count + get_dar(dude)
         end = time()
         print('Total time: ' + seconds_to_str(end - start))
+        if some_other_count > 1:
+            print('Removed tags on ' + str(some_other_count) + ' movies.')
+        if some_other_count == 0:
+            print('Removed no tags from any movies.')
+        if some_other_count == 1:
+            print('Removed tags on ' + str(some_other_count) + ' movie.')
     else:
         print('Sorry, not going to work.')
