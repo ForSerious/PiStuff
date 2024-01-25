@@ -8,10 +8,10 @@ from time import time, strftime, localtime
 
 DEBUG = False
 null = 'null'
-FFPROBE = '"G:\\Program Files\\MKVToolNix\\mkvinfo.exe"'
-MKVMERGE = '"G:\\Program Files\\MKVToolNix\\mkvpropedit.exe"'
-PREDIR = 'E:\\'
-FOLDERS = 'E:\\Dump\\The Bourne Supremacy\\theList.txt'
+FFPROBE = '"C:\\Program Files\\MKVToolNix\\mkvinfo.exe"'
+MKVMERGE = '"C:\\Program Files\\MKVToolNix\\mkvpropedit.exe"'
+PREDIR = 'G:\\'
+FOLDERS = 'D:\\TagRemovalList.txt'
 
 
 def generate_next_file(rootdir):

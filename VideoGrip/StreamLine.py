@@ -35,7 +35,7 @@ def reco_file(filepath):
 '''Create the command to run ReComp'''
 def crop_file(filepath):
     try:
-        command = VIEW64 + ' "' + filepath + '" /crop=(21,44,599,377,0) /convert="' + filepath + '"'
+        command = VIEW64 + ' "' + filepath + '" /crop=(211,110,1498,843,0) /convert="' + filepath + '"'
         if DEBUG:
             print('The Command: ')
             print(command)
