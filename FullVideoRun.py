@@ -21,7 +21,7 @@ FFPROBE = '"C:\\Program Files (x86)\\SVP 4\\utils\\ffprobe.exe"'
 MKVMERGE = '"C:\\Program Files\\MKVToolNix\\mkvmerge.exe"'
 MKVEDIT = '"C:\\Program Files\\MKVToolNix\\mkvpropedit.exe"'
 # Cut and frame rate correction processes
-FFNUM = 3
+FFNUM = 2
 # How many TVAI instances
 TVAINUM = 1
 # How many TVAI APO instances
@@ -566,7 +566,7 @@ def final_pass(filepath, filename):
                         os.remove(os.path.join(out_path[0], name + ' pt1 AI1.mkv'))
                         os.remove(os.path.join(out_path[0], name + ' pt2 AI1.mkv'))
         if REMOVETAGS:
-            editCommand = MKVMERGE + ' "' + os.path.join(out_path[0], out_path[1] + '.mkv') + ('" -e track:1 -d color-ma'
+            editCommand = MKVEDIT + ' "' + os.path.join(out_path[0], filepath['-name'] + '.mkv') + ('" -e track:1 -d color-ma'
                           'trix-coefficients -d color-range -d color-transfer-characteristics -d color-primaries')
             subprocess.call(editCommand)
     except:
@@ -1000,7 +1000,7 @@ if __name__ == '__main__':
         for thing in amqsort:
             amqinput.put(thing)
         amqoutput = JoinableQueue()
-        print('Starting AMQ.')
+        print('Starting denoise pass.')
         for i in range(TVAINUM):
             worker = Process(target=run_amq, args=(amqinput, amqoutput, amqtimes))
             worker.daemon = True
@@ -1023,7 +1023,7 @@ if __name__ == '__main__':
         for thing in aposort:
             apoinput.put(thing)
         apooutput = JoinableQueue()
-        print('Starting Prot and AHQ.')
+        print('Starting enhancement pass.')
         for i in range(TVAINUM):
             worker = Process(target=run_prot, args=(apoinput, apooutput, apotimes))
             worker.daemon = True
@@ -1046,7 +1046,7 @@ if __name__ == '__main__':
         protsort.sort(key=lambda item: (item['-sort']), reverse=True)
         for thing2 in protsort:
             protinput.put(thing2)
-        print('Starting APO.')
+        print('Starting interpolation pass.')
         for i in range(APONUM):
             worker = Process(target=run_apo, args=(protinput, protoutput, prottimes))
             worker.daemon = True
@@ -1057,7 +1057,7 @@ if __name__ == '__main__':
             print('Running total: ' + seconds_to_str(say[1]) + '\n')
             prottimes.task_done()
         protinput.join()
-        print('Starting Fin.')
+        print('Starting final pass.')
         while not protoutput.empty():
             blh = protoutput.get()
             smite = str(itemcount)
