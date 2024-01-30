@@ -12,6 +12,7 @@ from collections import deque
 
 DEBUG = False
 BETA = False
+REMOVETAGS = True
 CRF = '22'
 null = 'null'
 FFMPEG = '"C:\\Program Files (x86)\\SVP 4\\utils\\ffmpeg.exe"'
@@ -21,6 +22,7 @@ MKVMERGE = '"C:\\Program Files\\MKVToolNix\\mkvmerge.exe"'
 # Cut and frame rate correction processes
 FFNUM = 3
 # How many TVAI instances
+MKVEDIT = '"C:\\Program Files\\MKVToolNix\\mkvpropedit.exe"'
 TVAINUM = 1
 # How many TVAI APO instances
 APONUM = 1
@@ -563,6 +565,10 @@ def final_pass(filepath, filename):
                     if filepath.get('-cleanmerge', null) != null:
                         os.remove(os.path.join(out_path[0], name + ' pt1 AI1.mkv'))
                         os.remove(os.path.join(out_path[0], name + ' pt2 AI1.mkv'))
+        if REMOVETAGS:
+            editCommand = MKVMERGE + ' "' + os.path.join(out_path[0], out_path[1] + '.mkv') + ('" -e track:1 -d color-ma'
+                          'trix-coefficients -d color-range -d color-transfer-characteristics -d color-primaries')
+            subprocess.call(editCommand)
     except:
         return (False, traceback.format_exc())
     if filepath.get('-clean', null) != null:
@@ -864,7 +870,7 @@ def make_merge_command(the_way, filename):
             the_command = the_command.replace('rxxOut', os.path.join(the_way['-path'], the_way['-name'] + '.mkv'))
             the_command = the_command.replace('rxx4', the_way['-name'])
             the_command = the_command.replace('rxxTitle', the_way['-name'])
-        else :
+        else:
             the_command = the_command.replace('rxx3', os.path.join(the_way['-path'], the_way['-file'] + '.mkv'))
             the_command = the_command.replace('rxxOut', os.path.join(the_way['-path'], the_way['-file'] + '.mkv'))
             the_command = the_command.replace('rxx4', the_way['-file'])
