@@ -19,10 +19,10 @@ FFMPEG = '"C:\\Program Files (x86)\\SVP 4\\utils\\ffmpeg.exe"'
 TVAI = '"G:\\Program Files\\Topaz Labs LLC\\Topaz Video AI\\ffmpeg.exe"'
 FFPROBE = '"C:\\Program Files (x86)\\SVP 4\\utils\\ffprobe.exe"'
 MKVMERGE = '"C:\\Program Files\\MKVToolNix\\mkvmerge.exe"'
+MKVEDIT = '"C:\\Program Files\\MKVToolNix\\mkvpropedit.exe"'
 # Cut and frame rate correction processes
 FFNUM = 3
 # How many TVAI instances
-MKVEDIT = '"C:\\Program Files\\MKVToolNix\\mkvpropedit.exe"'
 TVAINUM = 1
 # How many TVAI APO instances
 APONUM = 1
