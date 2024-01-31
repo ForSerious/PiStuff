@@ -12,11 +12,16 @@ from collections import deque
 
 DEBUG = False
 BETA = False
+ALPHA = False
 REMOVETAGS = True
-CRF = '22'
+CRF = '21'
 null = 'null'
 FFMPEG = '"C:\\Program Files (x86)\\SVP 4\\utils\\ffmpeg.exe"'
 TVAI = '"G:\\Program Files\\Topaz Labs LLC\\Topaz Video AI\\ffmpeg.exe"'
+if BETA:
+    TVAI = '"H:\\Program Files\\Topaz Labs LLC\\Topaz Video AI BETA\\ffmpeg.exe"'
+if ALPHA:
+    TVAI = '"H:\\Program Files\\Topaz Labs LLC\\Topaz Video AI ALPHA\\ffmpeg.exe"'
 FFPROBE = '"C:\\Program Files (x86)\\SVP 4\\utils\\ffprobe.exe"'
 MKVMERGE = '"C:\\Program Files\\MKVToolNix\\mkvmerge.exe"'
 MKVEDIT = '"C:\\Program Files\\MKVToolNix\\mkvpropedit.exe"'
@@ -298,6 +303,8 @@ def apo_pass(filepath, filename):
         model = 'chf-3'
     if filepath.get('-apf', null) != null:
         model = 'apf-1'
+    if filepath.get('-aion', null) != null:
+        model = 'aion-1'
     try:
         command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin' \
                   + frame + ' -y -i "' + os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -filter_complex tvai_fi=model=' + model + ':slowmo=2.5:rdt=0.000001:device=0:vram=1:in' \
@@ -334,7 +341,7 @@ def apo_pass(filepath, filename):
 
 def get_r(filepath):
     if (filepath.get('-apo', null) != null or filepath.get('-apf', null) != null or filepath.get('-chr', null) != null
-            or filepath.get('-chf', null) != null):
+            or filepath.get('-chf', null) != null or filepath.get('-aion', null) != null):
         if filepath['-r'] == '23.976' or filepath['-r'] == '24':
             val = (float(filepath['-r']) * 2.5)
         else:
@@ -707,7 +714,8 @@ def run_apo(q, out, repo):
         if q.empty():
             break
         the_way = q.get()
-        if the_way.get('-apo', null) != null or the_way.get('-apf', null) != null or the_way.get('-chr', null) != null or the_way.get('-chf', null) != null:
+        if (the_way.get('-apo', null) != null or the_way.get('-apf', null) != null or the_way.get('-chr', null) != null
+                or the_way.get('-chf', null) != null or the_way.get('-aion', null) != null):
             out.put(apo_pass(the_way, the_way['-out']))
         else:
             out.put(the_way)
@@ -932,7 +940,10 @@ def save_json_state(filepath, what_pass):
 
 def make_beta_environment_variable():
     beta_env = os.environ.copy()
-    beta_env["TVAI_MODEL_DIR"] = 'C:\\ProgramData\\Topaz Labs LLC\\Topaz Video AI Beta\\models'
+    if ALPHA:
+        beta_env["TVAI_MODEL_DIR"] = 'C:\\ProgramData\\Topaz Labs LLC\\Topaz Video AI ALPHA\\models'
+    else:
+        beta_env["TVAI_MODEL_DIR"] = 'C:\\ProgramData\\Topaz Labs LLC\\Topaz Video AI Beta\\models'
     return beta_env
 
 
