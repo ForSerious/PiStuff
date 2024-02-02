@@ -171,6 +171,9 @@ def ff_pass(filepath):
             subprocess.call(command)
             save_json_state(filepath, 'ff1')
         if run_three and get_json_state(filepath).get('ff2', null) == null:
+            if DEBUG:
+                print('The Command3: ')
+                print(command3)
             subprocess.call(command3)
             save_json_state(filepath, 'ff2')
         filepath['-ext'] = 'mkv'
@@ -436,9 +439,11 @@ def prot_pass(filepath, filename):
     scale = '2.25'
     if filepath.get('-hd', 'null') != null:
         scale = '1'
-    theModel = 'prob-4'
+    theModel = 'prob-3'
     if filepath.get('-iris', 'null') != null:
         theModel = 'iris-1'
+    if filepath.get('-protver', 'null') == '4':
+        theModel = 'prob-4'
     blend = '0.0'
     if filepath.get('-blend', 'null') != null:
         blend = filepath['-blend']
@@ -853,7 +858,7 @@ def generate_vpy(the_way, the_file):
                  'clip = core.std.SetFrameProp(clip=clip, prop="_ColorRange", intval=1)\n' \
                  'clip = core.std.AssumeFPS(clip=clip, fpsnum=' + ifps + ', fpsden=' + fpsden + ')\n' \
                  + deinterlace + \
-                 'clip = havsfunc.QTGMC(Input=clip, Preset="Very Slow", TFF=' + TFF + ', NoiseProcess=1, NoiseRestore=0.0, DenoiseMC=True, NoiseTR=2, Sigma=' + sigma + ')\n' \
+                 'clip = havsfunc.QTGMC(Input=clip, TFF=' + TFF + ',Preset="Placebo", NoiseProcess=1, ChromaNoise=True, Denoiser="KNLMeansCL", DenoiseMC=True, NoiseTR=2, Sigma=' + sigma + ')\n' \
                  + decimate + 'clip = clip[::2]\n' \
                  'clip = core.std.AssumeFPS(clip=clip, fpsnum=' + ofps + ', fpsden=' + fpsden + ')\nclip.set_output()\n'
     f_out_put = open(os.path.join(the_way['-path'], the_file + '.vpy'), 'w')
