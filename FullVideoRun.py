@@ -194,6 +194,9 @@ def ff_pass(filepath):
 
 def amq_pass(filepath, filename):
     ff_start = time()
+    debuglog = ''
+    if DEBUG:
+        debuglog = ' -report'
     out_path = (filepath['-path'], filename + 'amq')
     filepath['-out'] = out_path[1]
     filepath['-folders'].append(os.path.join(filepath['-path'], out_path[1]))
@@ -215,7 +218,7 @@ def amq_pass(filepath, filename):
         t_blur = filepath.get('-tblur', '0.0')
         t_comp = filepath.get('-tcomp', '0.33')
         command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + \
-                  os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -r ' + filepath['-r'] + ' -filter_complex scale=w=' + filepath['-w'] + ':h=' + \
+                  os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -r ' + filepath['-r'] + debuglog + ' -filter_complex scale=w=' + filepath['-w'] + ':h=' + \
                   filepath['-h'] + ',setsar=1,tvai_up=model=thf-4:scale=1.0:w=' + filepath['-w'] + ':h=' + filepath['-h'] + \
                   ':noise=' + t_noise + ':blur=' + t_blur + ':compression=' + t_comp + ':device=0:vram=1:instances=1 -c:v png -compression_level 2 -pred mixed -pix_fmt rgb24 -sws_flags +accurate_rnd+full_chroma_int "' + \
                   os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
@@ -238,7 +241,7 @@ def amq_pass(filepath, filename):
         if filepath.get('-nyxauto', null) != null:
             n_auto = ':estimate=8'
         command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + \
-                  os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -r ' + filepath['-r'] + ' -filter_complex scale=w=' + filepath['-w'] + ':h=' + \
+                  os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -r ' + filepath['-r'] + debuglog + ' -filter_complex scale=w=' + filepath['-w'] + ':h=' + \
                   filepath['-h'] + ',setsar=1,tvai_up=model=' + n_version + ':scale=1:preblur=' + n_preblur + ':noise=' + n_noise + \
                   ':details=' + n_details + ':halo=' + n_halo + ':blur=' + n_blur + ':compression=' + n_comp + ':blend=' + n_blend + n_auto + ':dev' \
                   'ice=0:vram=1:instances=1 -c:v png -compression_level 2 -pred mixed -pix_fmt rgb24 -sws_flags +accurate_rnd+full_chroma_int "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
@@ -247,7 +250,7 @@ def amq_pass(filepath, filename):
         if filepath.get('-high', null) != null:
             am = 'ahq-12'
         command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + \
-                  os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -r ' + filepath['-r'] + ' -filter_complex scale=w=' + filepath['-w'] + ':h=' + filepath['-h'] + ',' \
+                  os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -r ' + filepath['-r'] + debuglog + ' -filter_complex scale=w=' + filepath['-w'] + ':h=' + filepath['-h'] + ',' \
                   'setsar=1,tvai_up=model=' + am + ':scale=1.0:w=' + filepath['-w'] + ':h=' + filepath['-h'] + ':blend=' + blend + ':device=0:vra' \
                   'm=1:instances=1 -c:v png -compression_level 2 -pred mixed -pix_fmt rgb24 -sws_flags +accurate_rnd+full_chroma_int "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
     try:
@@ -255,11 +258,7 @@ def amq_pass(filepath, filename):
             print('The Command: ')
             print(command)
         if get_json_state(filepath).get('amq', null) == null:
-            if BETA:
-                beta_env = make_beta_environment_variable()
-                subprocess.call(command, env=beta_env)
-            else:
-                subprocess.call(command)
+            env_run_command(filepath, command, out_path[1])
             save_json_state(filepath, 'amq')
         filepath['-ext'] = 'png'
         if filepath.get('-clean', null) != null:
@@ -308,19 +307,18 @@ def apo_pass(filepath, filename):
         model = 'apf-1'
     if filepath.get('-aion', null) != null:
         model = 'aion-1'
+    debuglog = ''
+    if DEBUG:
+        debuglog = ' -report'
     try:
         command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin' \
-                  + frame + ' -y -i "' + os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -filter_complex tvai_fi=model=' + model + ':slowmo=2.5:rdt=0.000001:device=0:vram=1:in' \
+                 + debuglog + frame + ' -y -i "' + os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -filter_complex tvai_fi=model=' + model + ':slowmo=2.5:rdt=0.000001:device=0:vram=1:in' \
                   'stances=0 -c:v png -compression_level 2 -pred mixed -pix_fmt rgb24 -sws_flags +accurate_rnd+full_chroma_int "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
         if DEBUG:
             print('The Command: ')
             print(command)
         if get_json_state(filepath).get('apo', null) == null:
-            if BETA:
-                beta_env = make_beta_environment_variable()
-                subprocess.call(command, env=beta_env)
-            else:
-                subprocess.call(command)
+            env_run_command(filepath, command, out_path[1])
             save_json_state(filepath, 'apo')
         filepath['-ext'] = 'png'
         if filepath.get('-clean', null) != null:
@@ -356,6 +354,9 @@ def get_r(filepath):
 
 def ahq_pass(filepath, filename):
     ff_start = time()
+    debuglog = ''
+    if DEBUG:
+        debuglog = ' -report'
     out_path = (filepath['-path'], filename + 'ahq')
     filepath['-out'] = out_path[1]
     filepath['-folders'].append(os.path.join(filepath['-path'], filepath['-out']))
@@ -382,7 +383,7 @@ def ahq_pass(filepath, filename):
     if filepath.get('-blend', 'null') != null:
         blend = filepath['-blend']
     command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' \
-              + os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -filter_complex scale=w=' + \
+              + os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '"' + debuglog + ' -filter_complex scale=w=' + \
               filepath['-w'] + ':h=' + filepath['-h'] + ',setsar=1,tvai_up=model=' + model + ':scale=' + scale + ':w=1920:h=1080:blend=' + blend + ':device' \
               '=0:vram=1:instances=1,scale=w=1920:h=1080:flags=lanczos:threads=0:force_original_aspect_ratio=decrease,p' \
               'ad=1920:1080:-1:-1:color=black -c:v png -compression_level 2 -pred mixed -pix_fmt rgb24 -sws_flags +accurate_rnd+full_chroma_int "' + os.path.join(out_path[0], out_path[1]) + \
@@ -392,11 +393,7 @@ def ahq_pass(filepath, filename):
             print('The Command: ')
             print(command)
         if get_json_state(filepath).get('ahq', null) == null:
-            if BETA:
-                beta_env = make_beta_environment_variable()
-                subprocess.call(command, env=beta_env)
-            else:
-                subprocess.call(command)
+            env_run_command(filepath, command, out_path[1])
             save_json_state(filepath, 'ahq')
         filepath['-ext'] = 'png'
         if filepath.get('-clean', null) != null:
@@ -419,6 +416,9 @@ def ahq_pass(filepath, filename):
 
 def prot_pass(filepath, filename):
     ff_start = time()
+    debuglog = ''
+    if DEBUG:
+        debuglog = ' -report'
     fext = get_ext(filepath['-ext'])
     filt = ''
     if filepath['-ext'] != 'png':
@@ -451,7 +451,7 @@ def prot_pass(filepath, filename):
         scale = filepath['-scale']
     if filepath.get('-auto', 'null') != null:
         command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -thread_queue_size 4096 -i "' \
-                  + os.path.join(filepath['-path'], filename + fext) + '"' + filt + ' -filter_complex scale=w=' + \
+                  + os.path.join(filepath['-path'], filename + fext) + '"' + filt + debuglog + ' -filter_complex scale=w=' + \
                   filepath['-w'] + ':h=' + filepath['-h'] + ',setsar=1,tvai_up=model=' + theModel + ':scale=' + scale + ':w=0:h=0:preblur=' \
                   '0:noise=0:details=0:halo=0:blur=0:compression=0:estimate=8:blend=' + blend + ':device=0:vram=1:instances=1,scale=w=1920:h=1' \
                   '080:flags=lanczos:threads=0:force_original_aspect_ratio=decrease,pad=1920:1080:-1:-1:color' \
@@ -490,11 +490,7 @@ def prot_pass(filepath, filename):
             print('The Command: ')
             print(command)
         if get_json_state(filepath).get('prot', null) == null:
-            if BETA:
-                beta_env = make_beta_environment_variable()
-                subprocess.call(command, env=beta_env)
-            else:
-                subprocess.call(command)
+            env_run_command(filepath, command, out_path[1])
             save_json_state(filepath, 'prot')
         filepath['-ext'] = 'png'
         if filepath.get('-clean', null) != null:
@@ -943,13 +939,34 @@ def save_json_state(filepath, what_pass):
     json.dump(state, outfile)
 
 
-def make_beta_environment_variable():
-    beta_env = os.environ.copy()
+def make_beta_environment_variable(beta_env=None):
+    if beta_env is None:
+        beta_env = os.environ.copy()
     if ALPHA:
         beta_env["TVAI_MODEL_DIR"] = 'C:\\ProgramData\\Topaz Labs LLC\\Topaz Video AI ALPHA\\models'
     else:
         beta_env["TVAI_MODEL_DIR"] = 'C:\\ProgramData\\Topaz Labs LLC\\Topaz Video AI Beta\\models'
     return beta_env
+
+
+def make_debug_environment_variable(theFileName):
+    debug_env = os.environ.copy()
+    debug_env["FFREPORT"] = 'file=' + theFileName.replace('\\', '\\\\').replace(':', '\\:') + ':level=32'
+    return debug_env
+
+
+def env_run_command(theWay, command, output):
+    debugenv = None
+    if DEBUG:
+        debugenv = make_debug_environment_variable(os.path.join(theWay['-path'], output + '.log'))
+    if BETA or ALPHA:
+        beta_env = make_beta_environment_variable(debugenv)
+        subprocess.call(command, env=beta_env)
+    else:
+        if DEBUG:
+            subprocess.call(command, env=debugenv)
+        else:
+            subprocess.call(command)
 
 
 if __name__ == '__main__':
