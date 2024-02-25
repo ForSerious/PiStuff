@@ -57,8 +57,8 @@ def seconds_to_str(elapsed=None):
 
 
 def get_ext(ext):
-    if ext == 'png':
-        return '\\%6d.png'
+    if ext == 'tif':
+        return '\\%6d.tif'
     else:
         return '.' + ext
 
@@ -112,7 +112,7 @@ def ff_pass(filepath):
         yadif = '-vf vaguedenoiser=threshold=' + dnlevel + ' '
     try:
         run_three = False
-        now_png = False
+        now_tif = False
         decimate = ''
         if filepath.get('-decimate', null) != null:
             #decimate = '-vf "shuffleframes=' + decimate_tmp + '" '
@@ -133,7 +133,7 @@ def ff_pass(filepath):
             command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + os.path.join(filepath['-path'],
             filepath['-file'] + '.' + filepath['-ext']) + '" ' + ss + t + '-r ' + filepath['-r'] + ' -filter_complex setsar=1,bwdif=mode=1:parity=-1:deint=0' + decimate + '-c:v libx265 -crf' \
             ' 14 -preset slow "' + os.path.join(out_path[0], out_path[1] + '.mkv') + '"'
-            #now_png = True
+            #now_tif = True
         if filepath.get('-deinterlace', null) == null:
             command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -i "' + os.path.join(filepath['-path'],
                       filepath['-file'] + '.' + filepath['-ext']) + '" -y ' + ss + t + '-map 0:v -map 0:a? -map 0:s? -map 0:d? -map 0:t? ' + yadif + \
@@ -177,8 +177,8 @@ def ff_pass(filepath):
             subprocess.call(command3)
             save_json_state(filepath, 'ff2')
         filepath['-ext'] = 'mkv'
-        if now_png:
-            filepath['-ext'] = 'png'
+        if now_tif:
+            filepath['-ext'] = 'tif'
             filepath['-folders'].append(os.path.join(out_path[0], out_path[1]))
     except:
         return None
@@ -220,8 +220,8 @@ def amq_pass(filepath, filename):
         command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + \
                   os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -r ' + filepath['-r'] + debuglog + ' -filter_complex scale=w=' + filepath['-w'] + ':h=' + \
                   filepath['-h'] + ',setsar=1,tvai_up=model=thf-4:scale=1.0:w=' + filepath['-w'] + ':h=' + filepath['-h'] + \
-                  ':noise=' + t_noise + ':blur=' + t_blur + ':compression=' + t_comp + ':device=0:vram=1:instances=1 -c:v png -compression_level 2 -pred mixed -pix_fmt rgb24 -sws_flags +accurate_rnd+full_chroma_int "' + \
-                  os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
+                  ':noise=' + t_noise + ':blur=' + t_blur + ':compression=' + t_comp + ':device=0:vram=1:instances=1 -c:v tiff -compression_algo deflate "' + \
+                  os.path.join(out_path[0], out_path[1]) + '\\%6d.tif"'
     elif filepath.get('-nyx', null) != null:
         n_version = filepath.get('-nyxver', '2')
         if n_version == '2':
@@ -244,7 +244,7 @@ def amq_pass(filepath, filename):
                   os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -r ' + filepath['-r'] + debuglog + ' -filter_complex scale=w=' + filepath['-w'] + ':h=' + \
                   filepath['-h'] + ',setsar=1,tvai_up=model=' + n_version + ':scale=1:preblur=' + n_preblur + ':noise=' + n_noise + \
                   ':details=' + n_details + ':halo=' + n_halo + ':blur=' + n_blur + ':compression=' + n_comp + ':blend=' + n_blend + n_auto + ':dev' \
-                  'ice=0:vram=1:instances=1 -c:v png -compression_level 2 -pred mixed -pix_fmt rgb24 -sws_flags +accurate_rnd+full_chroma_int "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
+                  'ice=0:vram=1:instances=1 -c:v tiff -compression_algo deflate "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.tif"'
     else:
         am = 'amq-13'
         if filepath.get('-high', null) != null:
@@ -252,7 +252,7 @@ def amq_pass(filepath, filename):
         command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + \
                   os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -r ' + filepath['-r'] + debuglog + ' -filter_complex scale=w=' + filepath['-w'] + ':h=' + filepath['-h'] + ',' \
                   'setsar=1,tvai_up=model=' + am + ':scale=1.0:w=' + filepath['-w'] + ':h=' + filepath['-h'] + ':blend=' + blend + ':device=0:vra' \
-                  'm=1:instances=1 -c:v png -compression_level 2 -pred mixed -pix_fmt rgb24 -sws_flags +accurate_rnd+full_chroma_int "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
+                  'm=1:instances=1 -c:v tiff -compression_algo deflate "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.tif"'
     try:
         if DEBUG:
             print('The Command: ')
@@ -260,7 +260,7 @@ def amq_pass(filepath, filename):
         if get_json_state(filepath).get('amq', null) == null:
             env_run_command(filepath, command, out_path[1])
             save_json_state(filepath, 'amq')
-        filepath['-ext'] = 'png'
+        filepath['-ext'] = 'tif'
         if filepath.get('-clean', null) != null:
             clean_images(filepath)
             remove_some_file(filepath, filename)
@@ -296,7 +296,7 @@ def apo_pass(filepath, filename):
             raise
         pass
     frame = ''
-    if filepath['-ext'] == 'png':
+    if filepath['-ext'] == 'tif':
         frame = ' -framerate ' + filepath['-r']
     model = 'apo-8'
     if filepath.get('-chr', null) != null:
@@ -313,14 +313,14 @@ def apo_pass(filepath, filename):
     try:
         command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin' \
                  + debuglog + frame + ' -y -i "' + os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -filter_complex tvai_fi=model=' + model + ':slowmo=2.5:rdt=0.000001:device=0:vram=1:in' \
-                  'stances=0 -c:v png -compression_level 2 -pred mixed -pix_fmt rgb24 -sws_flags +accurate_rnd+full_chroma_int "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
+                  'stances=0 -c:v tiff -compression_algo deflate "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.tif"'
         if DEBUG:
             print('The Command: ')
             print(command)
         if get_json_state(filepath).get('apo', null) == null:
             env_run_command(filepath, command, out_path[1])
             save_json_state(filepath, 'apo')
-        filepath['-ext'] = 'png'
+        filepath['-ext'] = 'tif'
         if filepath.get('-clean', null) != null:
             clean_images(filepath)
             remove_some_file(filepath, filename)
@@ -386,8 +386,8 @@ def ahq_pass(filepath, filename):
               + os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '"' + debuglog + ' -filter_complex scale=w=' + \
               filepath['-w'] + ':h=' + filepath['-h'] + ',setsar=1,tvai_up=model=' + model + ':scale=' + scale + ':w=1920:h=1080:blend=' + blend + ':device' \
               '=0:vram=1:instances=1,scale=w=1920:h=1080:flags=lanczos:threads=0:force_original_aspect_ratio=decrease,p' \
-              'ad=1920:1080:-1:-1:color=black -c:v png -compression_level 2 -pred mixed -pix_fmt rgb24 -sws_flags +accurate_rnd+full_chroma_int "' + os.path.join(out_path[0], out_path[1]) + \
-              '\\%6d.png"'
+              'ad=1920:1080:-1:-1:color=black -c:v tiff -compression_algo deflate "' + os.path.join(out_path[0], out_path[1]) + \
+              '\\%6d.tif"'
     try:
         if DEBUG:
             print('The Command: ')
@@ -395,7 +395,7 @@ def ahq_pass(filepath, filename):
         if get_json_state(filepath).get('ahq', null) == null:
             env_run_command(filepath, command, out_path[1])
             save_json_state(filepath, 'ahq')
-        filepath['-ext'] = 'png'
+        filepath['-ext'] = 'tif'
         if filepath.get('-clean', null) != null:
             clean_images(filepath)
             remove_some_file(filepath, filename)
@@ -421,8 +421,9 @@ def prot_pass(filepath, filename):
         debuglog = ' -report'
     fext = get_ext(filepath['-ext'])
     filt = ''
-    if filepath['-ext'] != 'png':
+    if filepath['-ext'] != 'tif':
         filt = ' -sws_flags spline+accurate_rnd+full_chroma_int'
+        filt = ''
     out_path = (filepath['-path'], filename + 'prot')
     filepath['-out'] = out_path[1]
     filepath['-folders'].append(os.path.join(filepath['-path'], out_path[1]))
@@ -455,7 +456,7 @@ def prot_pass(filepath, filename):
                   filepath['-w'] + ':h=' + filepath['-h'] + ',setsar=1,tvai_up=model=' + theModel + ':scale=' + scale + ':w=0:h=0:preblur=' \
                   '0:noise=0:details=0:halo=0:blur=0:compression=0:estimate=8:blend=' + blend + ':device=0:vram=1:instances=1,scale=w=1920:h=1' \
                   '080:flags=lanczos:threads=0:force_original_aspect_ratio=decrease,pad=1920:1080:-1:-1:color' \
-                  '=black -c:v png -compression_level 2 -pred mixed -pix_fmt rgb24 -sws_flags +accurate_rnd+full_chroma_int "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
+                  '=black -c:v tiff -compression_algo deflate "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.tif"'
     else:
         prot_preblur = '-0.06'
         prot_noise = '0'
@@ -484,7 +485,7 @@ def prot_pass(filepath, filename):
                   'ur=' + prot_preblur + ':noise=' + prot_noise + ':details=' + prot_details + ':halo=' + prot_halo + ':blur=' + \
                   prot_blur + ':compression=' + prot_compression + prot_r_t_a + ':blend=' + blend + ':device=0:vram=1:instances=1,scale=' \
                   'w=1920:h=1080:flags=lanczos:threads=0:force_original_aspect_ratio=decrease,pad=1920:1080:-1:-1:color' \
-                  '=black -c:v png -compression_level 2 -pred mixed -pix_fmt rgb24 -sws_flags +accurate_rnd+full_chroma_int "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.png"'
+                  '=black -c:v tiff -compression_algo deflate "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.tif"'
     try:
         if DEBUG:
             print('The Command: ')
@@ -492,7 +493,7 @@ def prot_pass(filepath, filename):
         if get_json_state(filepath).get('prot', null) == null:
             env_run_command(filepath, command, out_path[1])
             save_json_state(filepath, 'prot')
-        filepath['-ext'] = 'png'
+        filepath['-ext'] = 'tif'
         if filepath.get('-clean', null) != null:
             clean_images(filepath)
             remove_some_file(filepath, filename)
@@ -530,10 +531,9 @@ def final_pass(filepath, filename):
     try:
         command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -framerate ' + (get_r(filepath)[4:]) + ' -y -i "' + \
                   os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -c:v libx265 -crf ' + CRF + ' -pix_fmt' \
-             ' yuv420p -preset slow -x265-params aq-mode=3 -sws_flags spline+accurate_rnd+full_chroma_int -vf "colo' \
-             'rspace=bt709:iall=bt601-6-525:fast=0" -color_range 1 -colorspace 1 -color_primaries 1 -color_trc 1' \
+             ' yuv420p -preset slow -x265-params aq-mode=3 -sws_flags spline+accurate_rnd+full_chroma_int -vf "zscale=pin=bt709:min=gbr:tin=bt709:rin=pc:agamma=false:d=error_diffusion:p=240m:m=470bg:t=601:r=tv:c=left,format=yuv420p" -color_range tv ' \
              ' "' + os.path.join(out_path[0], out_path[1] + '.mkv') + '"'
-        if filepath['-ext'] != 'png':
+        if filepath['-ext'] != 'tif':
             command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + \
                       os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -an -sn -map_chapters -1 -c:v libx265 -crf ' \
                       + CRF + ' -preset slow -x265-params aq-mode=3 "' + os.path.join(out_path[0], out_path[1] + '.mkv') + '"'
