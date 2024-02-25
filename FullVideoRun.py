@@ -26,7 +26,7 @@ FFPROBE = '"C:\\Program Files (x86)\\SVP 4\\utils\\ffprobe.exe"'
 MKVMERGE = '"C:\\Program Files\\MKVToolNix\\mkvmerge.exe"'
 MKVEDIT = '"C:\\Program Files\\MKVToolNix\\mkvpropedit.exe"'
 # Cut and frame rate correction processes
-FFNUM = 2
+FFNUM = 3
 # How many TVAI instances
 TVAINUM = 1
 # How many TVAI APO instances
