@@ -528,10 +528,13 @@ def final_pass(filepath, filename):
     if filepath.get('-name', null) != null:
         name = filepath['-name']
     out_path = (filepath['-path'], name + part)
+    color_specs = 'p=709:t=601:m=709:r=tv:c=left'
+    if filepath.get('-hd', null) != null:
+        color_specs = 'p=709:t=601:m=470bg:r=tv:c=left'
     try:
         command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -framerate ' + (get_r(filepath)[4:]) + ' -y -i "' + \
                   os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -c:v libx265 -crf ' + CRF + ' -pix_fmt' \
-             ' yuv420p -preset slow -x265-params aq-mode=3 -sws_flags spline+accurate_rnd+full_chroma_int -vf "zscale=pin=bt709:min=gbr:tin=bt709:rin=pc:agamma=false:d=error_diffusion:p=709:t=601:m=709:r=tv:c=left,format=yuv420p" -color_range tv ' \
+             ' yuv420p -preset slow -x265-params aq-mode=3 -sws_flags spline+accurate_rnd+full_chroma_int -vf "zscale=pin=bt709:min=gbr:tin=bt709:rin=pc:agamma=false:d=error_diffusion:' + color_specs + ',format=yuv420p" -color_range tv ' \
              ' "' + os.path.join(out_path[0], out_path[1] + '.mkv') + '"'
         if filepath['-ext'] != 'tif':
             command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + \
