@@ -529,7 +529,7 @@ def final_pass(filepath, filename):
         name = filepath['-name']
     out_path = (filepath['-path'], name + part)
     color_specs = 'p=709:t=601:m=709:r=tv:c=left'
-    if filepath.get('-hd', null) != null:
+    if filepath.get('-hd', null) != null or filepath.get('-bluray', null) != null:
         color_specs = 'p=709:t=601:m=470bg:r=tv:c=left'
     try:
         command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -framerate ' + (get_r(filepath)[4:]) + ' -y -i "' + \
