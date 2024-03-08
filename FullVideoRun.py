@@ -97,7 +97,7 @@ def ff_pass(filepath):
                 part = ' pt1 ff'
     if filepath.get('-r', null) != null:
         r = '-r ' + filepath['-r'] + ' '
-    out_path = (filepath['-path'], filepath['-file'] + part)
+    out_path = (get_drive_path(filepath['-path'], filepath, False), filepath['-file'] + part)
     filepath['-out'] = out_path[1]
     if filepath.get('-yadif', null) != null:
         yadif = '-vf yadif '
@@ -120,9 +120,9 @@ def ff_pass(filepath):
         if filepath.get('-vpy', null) != null and filepath.get('-deinterlace', null) != null:
             decimate = '-r ' + filepath['-r'] + ' ' + decimate
             generate_vpy(filepath, filepath['-file'])
-            command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -f vapoursynth -i "' + os.path.join(filepath['-path'], filepath['-file'] +
+            command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -f vapoursynth -i "' + os.path.join(get_drive_path(filepath['-path'], filepath, True), filepath['-file'] +
             '.vpy') + '" -y ' + ss + t + '-map 0:v -map 0:a? -map 0:s? -map 0:d? -map 0:t? ' + decimate + '-c:v libx265 -crf' \
-            ' 14 -preset slow "' + os.path.join(out_path[0], out_path[1] + '.mkv') + '"'
+            ' 12 -preset slow "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + '.mkv') + '"'
         if filepath.get('-vpy', null) == null and filepath.get('-deinterlace', null) != null:
             #if not os.path.exists(os.path.join(out_path[0], out_path[1])):
             #    os.mkdir(os.path.join(out_path[0], out_path[1]))
@@ -130,21 +130,21 @@ def ff_pass(filepath):
                 decimate = ',"shuffleframes=0|-1","decimate=' + decimate_tmp + '" '
             else:
                 decimate = ',"decimate=' + decimate_tmp + '" '
-            command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + os.path.join(filepath['-path'],
+            command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + os.path.join(get_drive_path(filepath['-path'], filepath, True),
             filepath['-file'] + '.' + filepath['-ext']) + '" ' + ss + t + '-r ' + filepath['-r'] + ' -filter_complex setsar=1,bwdif=mode=1:parity=-1:deint=0' + decimate + '-c:v libx265 -crf' \
-            ' 14 -preset slow "' + os.path.join(out_path[0], out_path[1] + '.mkv') + '"'
+            ' 12 -preset slow "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + '.mkv') + '"'
             #now_tif = True
         if filepath.get('-deinterlace', null) == null:
-            command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -i "' + os.path.join(filepath['-path'],
+            command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -i "' + os.path.join(get_drive_path(filepath['-path'], filepath, True),
                       filepath['-file'] + '.' + filepath['-ext']) + '" -y ' + ss + t + '-map 0:v -map 0:a? -map 0:s? -map 0:d? -map 0:t? ' + yadif + \
-                      r + dering + '-c:v libx265 -crf 16 -preset slow -c:a copy -c:s copy -max_muxing_queue_size 4096 "' + os.path.join(out_path[0], out_path[1] +
+                      r + dering + '-c:v libx265 -crf 12 -preset slow -c:a copy -c:s copy -max_muxing_queue_size 4096 "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] +
                       '.mkv') + '"'
             if filepath.get('-vpy', null) != null:
                 generate_vpy(filepath, out_path[1])
                 run_three = True
-                command3 = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -f vapoursynth -i "' + os.path.join(filepath['-path'], out_path[1] +
+                command3 = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -f vapoursynth -i "' + os.path.join(get_drive_path(filepath['-path'], filepath, True), out_path[1] +
                 '.vpy') + '" -y -map 0:v -map 0:a? -map 0:s? -map 0:d? -map 0:t? ' + r + decimate + '-c:v libx265 -crf' \
-                ' 14 -preset slow "' + os.path.join(out_path[0], out_path[1] + 'vpy' + '.mkv') + '"'
+                ' 12 -preset slow "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + 'vpy' + '.mkv') + '"'
                 out_path = (filepath['-path'], out_path[1] + 'vpy')
                 filepath['-out'] = out_path[1]
         if filepath.get('-name', null) != null:
@@ -154,9 +154,9 @@ def ff_pass(filepath):
                 name = filepath['-name']
         else:
             name = out_path[1]
-        command2 = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -i "' + os.path.join(filepath['-path'],
+        command2 = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -i "' + os.path.join(get_drive_path(filepath['-path'], filepath, True),
         filepath['-file'] + '.' + filepath['-ext']) + '" -y ' + ss + t + '-map 0:v -map 0:a? -map 0:s? -map' \
-        ' 0:d? -map 0:t? ' + r + '-vn -c:a copy -c:s copy -c:d copy "' + os.path.join(out_path[0], name + '.mka') + '"'
+        ' 0:d? -map 0:t? ' + r + '-vn -c:a copy -c:s copy -c:d copy "' + os.path.join(get_drive_path(out_path[0], filepath, False), name + '.mka') + '"'
         filepath['-mkapath'] = os.path.join(out_path[0], name + '.mka')
         filepath['-mkaname'] = name
         if DEBUG:
@@ -179,7 +179,7 @@ def ff_pass(filepath):
         filepath['-ext'] = 'mkv'
         if now_tif:
             filepath['-ext'] = 'tif'
-            filepath['-folders'].append(os.path.join(out_path[0], out_path[1]))
+            filepath['-folders'].append(os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]))
     except:
         return None
     ff_end = time()
@@ -189,7 +189,7 @@ def ff_pass(filepath):
     filepath['-took'] = the_name + ' time: ' + seconds_to_str(ff_end - ff_start)
     filepath['-sort'] = ff_end - ff_start
     filepath['-runtot'] = filepath['-sort']
-    return filepath
+    return swap_drive_path(filepath)
 
 
 def amq_pass(filepath, filename):
@@ -199,13 +199,13 @@ def amq_pass(filepath, filename):
         debuglog = ' -report'
     out_path = (filepath['-path'], filename + 'amq')
     filepath['-out'] = out_path[1]
-    filepath['-folders'].append(os.path.join(filepath['-path'], out_path[1]))
+    filepath['-folders'].append(os.path.join(get_drive_path(filepath['-path'], filepath, False), out_path[1]))
     try:
-        if not os.path.exists(os.path.join(filepath['-path'], filepath['-out'])):
-            os.mkdir(os.path.join(filepath['-path'], filepath['-out']))
+        if not os.path.exists(os.path.join(get_drive_path(filepath['-path'], filepath, False), filepath['-out'])):
+            os.mkdir(os.path.join(get_drive_path(filepath['-path'], filepath, False), filepath['-out']))
         if DEBUG:
             print('The Make Folder: ')
-            print('"' + os.path.join(filepath['-path'], filepath['-out']) + '"')
+            print('"' + os.path.join(get_drive_path(filepath['-path'], filepath, False), filepath['-out']) + '"')
     except OSError as exc:
         if exc.errno != errno.EEXIST:
             raise
@@ -218,10 +218,10 @@ def amq_pass(filepath, filename):
         t_blur = filepath.get('-tblur', '0.0')
         t_comp = filepath.get('-tcomp', '0.33')
         command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + \
-                  os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -r ' + filepath['-r'] + debuglog + ' -filter_complex scale=w=' + filepath['-w'] + ':h=' + \
+                  os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + get_ext(filepath['-ext'])) + '" -r ' + filepath['-r'] + debuglog + ' -filter_complex scale=w=' + filepath['-w'] + ':h=' + \
                   filepath['-h'] + ',setsar=1,tvai_up=model=thf-4:scale=1.0:w=' + filepath['-w'] + ':h=' + filepath['-h'] + \
                   ':noise=' + t_noise + ':blur=' + t_blur + ':compression=' + t_comp + ':device=0:vram=1:instances=1 -c:v tiff -compression_algo deflate "' + \
-                  os.path.join(out_path[0], out_path[1]) + '\\%6d.tif"'
+                  os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"'
     elif filepath.get('-nyx', null) != null:
         n_version = filepath.get('-nyxver', '2')
         if n_version == '2':
@@ -241,18 +241,18 @@ def amq_pass(filepath, filename):
         if filepath.get('-nyxauto', null) != null:
             n_auto = ':estimate=8'
         command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + \
-                  os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -r ' + filepath['-r'] + debuglog + ' -filter_complex scale=w=' + filepath['-w'] + ':h=' + \
+                  os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + get_ext(filepath['-ext'])) + '" -r ' + filepath['-r'] + debuglog + ' -filter_complex scale=w=' + filepath['-w'] + ':h=' + \
                   filepath['-h'] + ',setsar=1,tvai_up=model=' + n_version + ':scale=1:preblur=' + n_preblur + ':noise=' + n_noise + \
                   ':details=' + n_details + ':halo=' + n_halo + ':blur=' + n_blur + ':compression=' + n_comp + ':blend=' + n_blend + n_auto + ':dev' \
-                  'ice=0:vram=1:instances=1 -c:v tiff -compression_algo deflate "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.tif"'
+                  'ice=0:vram=1:instances=1 -c:v tiff -compression_algo deflate "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"'
     else:
         am = 'amq-13'
         if filepath.get('-high', null) != null:
             am = 'ahq-12'
         command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + \
-                  os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -r ' + filepath['-r'] + debuglog + ' -filter_complex scale=w=' + filepath['-w'] + ':h=' + filepath['-h'] + ',' \
+                  os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + get_ext(filepath['-ext'])) + '" -r ' + filepath['-r'] + debuglog + ' -filter_complex scale=w=' + filepath['-w'] + ':h=' + filepath['-h'] + ',' \
                   'setsar=1,tvai_up=model=' + am + ':scale=1.0:w=' + filepath['-w'] + ':h=' + filepath['-h'] + ':blend=' + blend + ':device=0:vra' \
-                  'm=1:instances=1 -c:v tiff -compression_algo deflate "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.tif"'
+                  'm=1:instances=1 -c:v tiff -compression_algo deflate "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"'
     try:
         if DEBUG:
             print('The Command: ')
@@ -277,20 +277,20 @@ def amq_pass(filepath, filename):
         filepath['-runtot'] = filepath['-runtot'] + filepath['-sort']
     else:
         filepath['-runtot'] = filepath['-sort']
-    return filepath
+    return swap_drive_path(filepath)
 
 
 def apo_pass(filepath, filename):
     ff_start = time()
     out_path = (filepath['-path'], filename + 'apo')
     filepath['-out'] = out_path[1]
-    filepath['-folders'].append(os.path.join(filepath['-path'], out_path[1]))
+    filepath['-folders'].append(os.path.join(get_drive_path(filepath['-path'], filepath, False), out_path[1]))
     try:
-        if not os.path.exists(os.path.join(filepath['-path'], filepath['-out'])):
-            os.mkdir(os.path.join(filepath['-path'], filepath['-out']))
+        if not os.path.exists(os.path.join(get_drive_path(filepath['-path'], filepath, False), filepath['-out'])):
+            os.mkdir(os.path.join(get_drive_path(filepath['-path'], filepath, False), filepath['-out']))
         if DEBUG:
             print('The Make Folder: ')
-            print('"' + os.path.join(filepath['-path'], filepath['-out']) + '"')
+            print('"' + os.path.join(get_drive_path(filepath['-path'], filepath, False), filepath['-out']) + '"')
     except OSError as exc:
         if exc.errno != errno.EEXIST:
             raise
@@ -312,8 +312,8 @@ def apo_pass(filepath, filename):
         debuglog = ' -report'
     try:
         command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin' \
-                 + debuglog + frame + ' -y -i "' + os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -filter_complex tvai_fi=model=' + model + ':slowmo=2.5:rdt=0.000001:device=0:vram=1:in' \
-                  'stances=0 -c:v tiff -compression_algo deflate "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.tif"'
+                 + debuglog + frame + ' -y -i "' + os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + get_ext(filepath['-ext'])) + '" -filter_complex tvai_fi=model=' + model + ':slowmo=2.5:rdt=0.000001:device=0:vram=1:in' \
+                  'stances=0 -c:v tiff -compression_algo deflate "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"'
         if DEBUG:
             print('The Command: ')
             print(command)
@@ -337,7 +337,7 @@ def apo_pass(filepath, filename):
         filepath['-runtot'] = filepath['-runtot'] + filepath['-sort']
     else:
         filepath['-runtot'] = filepath['-sort']
-    return filepath
+    return swap_drive_path(filepath)
 
 
 def get_r(filepath):
@@ -359,13 +359,13 @@ def ahq_pass(filepath, filename):
         debuglog = ' -report'
     out_path = (filepath['-path'], filename + 'ahq')
     filepath['-out'] = out_path[1]
-    filepath['-folders'].append(os.path.join(filepath['-path'], filepath['-out']))
+    filepath['-folders'].append(os.path.join(get_drive_path(filepath['-path'], filepath, False), filepath['-out']))
     try:
-        if not os.path.exists(os.path.join(filepath['-path'], filepath['-out'])):
-            os.mkdir(os.path.join(filepath['-path'], filepath['-out']))
+        if not os.path.exists(os.path.join(get_drive_path(filepath['-path'], filepath, False), filepath['-out'])):
+            os.mkdir(os.path.join(get_drive_path(filepath['-path'], filepath, False), filepath['-out']))
         if DEBUG:
             print('The Make Folder: ')
-            print('"' + os.path.join(filepath['-path'], filepath['-out']) + '"')
+            print('"' + os.path.join(get_drive_path(filepath['-path'], filepath, False), filepath['-out']) + '"')
     except OSError as exc:
         if exc.errno != errno.EEXIST:
             raise
@@ -383,10 +383,10 @@ def ahq_pass(filepath, filename):
     if filepath.get('-blend', 'null') != null:
         blend = filepath['-blend']
     command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' \
-              + os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '"' + debuglog + ' -filter_complex scale=w=' + \
+              + os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + get_ext(filepath['-ext'])) + '"' + debuglog + ' -filter_complex scale=w=' + \
               filepath['-w'] + ':h=' + filepath['-h'] + ',setsar=1,tvai_up=model=' + model + ':scale=' + scale + ':w=1920:h=1080:blend=' + blend + ':device' \
               '=0:vram=1:instances=1,scale=w=1920:h=1080:flags=lanczos:threads=0:force_original_aspect_ratio=decrease,p' \
-              'ad=1920:1080:-1:-1:color=black -c:v tiff -compression_algo deflate "' + os.path.join(out_path[0], out_path[1]) + \
+              'ad=1920:1080:-1:-1:color=black -c:v tiff -compression_algo deflate "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + \
               '\\%6d.tif"'
     try:
         if DEBUG:
@@ -411,7 +411,7 @@ def ahq_pass(filepath, filename):
         filepath['-runtot'] = filepath['-runtot'] + (ff_end - ff_start)
     else:
         filepath['-runtot'] = (ff_end - ff_start)
-    return filepath
+    return swap_drive_path(filepath)
 
 
 def prot_pass(filepath, filename):
@@ -426,13 +426,13 @@ def prot_pass(filepath, filename):
         filt = ''
     out_path = (filepath['-path'], filename + 'prot')
     filepath['-out'] = out_path[1]
-    filepath['-folders'].append(os.path.join(filepath['-path'], out_path[1]))
+    filepath['-folders'].append(os.path.join(get_drive_path(filepath['-path'], filepath, False), out_path[1]))
     try:
-        if not os.path.exists(os.path.join(filepath['-path'], out_path[1])):
-            os.mkdir(os.path.join(filepath['-path'], out_path[1]))
+        if not os.path.exists(os.path.join(get_drive_path(filepath['-path'], filepath, False), out_path[1])):
+            os.mkdir(os.path.join(get_drive_path(filepath['-path'], filepath, False), out_path[1]))
         if DEBUG:
             print('Prot Make Folder: ')
-            print(os.path.join(filepath['-path'], out_path[1]))
+            print(os.path.join(get_drive_path(filepath['-path'], filepath, False), out_path[1]))
     except OSError as exc:
         if exc.errno != errno.EEXIST:
             raise
@@ -452,11 +452,11 @@ def prot_pass(filepath, filename):
         scale = filepath['-scale']
     if filepath.get('-auto', 'null') != null:
         command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -thread_queue_size 4096 -i "' \
-                  + os.path.join(filepath['-path'], filename + fext) + '"' + filt + debuglog + ' -filter_complex scale=w=' + \
+                  + os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + fext) + '"' + filt + debuglog + ' -filter_complex scale=w=' + \
                   filepath['-w'] + ':h=' + filepath['-h'] + ',setsar=1,tvai_up=model=' + theModel + ':scale=' + scale + ':w=0:h=0:preblur=' \
                   '0:noise=0:details=0:halo=0:blur=0:compression=0:estimate=8:blend=' + blend + ':device=0:vram=1:instances=1,scale=w=1920:h=1' \
                   '080:flags=lanczos:threads=0:force_original_aspect_ratio=decrease,pad=1920:1080:-1:-1:color' \
-                  '=black -c:v tiff -compression_algo deflate "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.tif"'
+                  '=black -c:v tiff -compression_algo deflate "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"'
     else:
         prot_preblur = '-0.06'
         prot_noise = '0'
@@ -480,12 +480,12 @@ def prot_pass(filepath, filename):
         if filepath.get('-protrta', 'null') != null or filepath.get('-protauto', 'null') != null:
             prot_r_t_a = ':estimate=8'
         command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' \
-                  + os.path.join(filepath['-path'], filename + fext) + '"' + filt + ' -filter_complex scale=w=' + \
+                  + os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + fext) + '"' + filt + ' -filter_complex scale=w=' + \
                   filepath['-w'] + ':h=' + filepath['-h'] + ',setsar=1,tvai_up=model=' + theModel + ':scale=' + scale + ':w=1920:h=1080:prebl' \
                   'ur=' + prot_preblur + ':noise=' + prot_noise + ':details=' + prot_details + ':halo=' + prot_halo + ':blur=' + \
                   prot_blur + ':compression=' + prot_compression + prot_r_t_a + ':blend=' + blend + ':device=0:vram=1:instances=1,scale=' \
                   'w=1920:h=1080:flags=lanczos:threads=0:force_original_aspect_ratio=decrease,pad=1920:1080:-1:-1:color' \
-                  '=black -c:v tiff -compression_algo deflate "' + os.path.join(out_path[0], out_path[1]) + '\\%6d.tif"'
+                  '=black -c:v tiff -compression_algo deflate "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"'
     try:
         if DEBUG:
             print('The Command: ')
@@ -509,7 +509,7 @@ def prot_pass(filepath, filename):
         filepath['-runtot'] = filepath['-runtot'] + (ff_end - ff_start)
     else:
         filepath['-runtot'] = (ff_end - ff_start)
-    return filepath
+    return swap_drive_path(filepath)
 
 
 def final_pass(filepath, filename):
@@ -533,9 +533,9 @@ def final_pass(filepath, filename):
         color_specs = 'p=709:t=601:m=470bg:r=tv:c=left'
     try:
         command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -framerate ' + (get_r(filepath)[4:]) + ' -y -i "' + \
-                  os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -c:v libx265 -crf ' + CRF + ' -pix_fmt' \
+                  os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + get_ext(filepath['-ext'])) + '" -c:v libx265 -crf ' + CRF + ' -pix_fmt' \
              ' yuv420p -preset slow -x265-params aq-mode=3 -sws_flags spline+accurate_rnd+full_chroma_int -vf "zscale=pin=bt709:min=gbr:tin=bt709:rin=pc:agamma=false:d=error_diffusion:' + color_specs + ',format=yuv420p" -color_range tv ' \
-             ' "' + os.path.join(out_path[0], out_path[1] + '.mkv') + '"'
+             ' "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + '.mkv') + '"'
         if filepath['-ext'] != 'tif':
             command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + \
                       os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -an -sn -map_chapters -1 -c:v libx265 -crf ' \
@@ -559,13 +559,13 @@ def final_pass(filepath, filename):
             else:
                 name = filepath['-file']
             if filepath.get('-cleanmerge', null) != null:
-                os.remove(os.path.join(out_path[0], out_path[1] + '.mkv'))
-                if filepath.get('-pt2', null) != null and os.path.exists(os.path.join(out_path[0], out_path[1][:-3] + '.mka')):
-                    os.remove(os.path.join(out_path[0], out_path[1][:-3] + '.mka'))
-                elif os.path.exists(os.path.join(out_path[0], name + '.mka')):
-                    os.remove(os.path.join(out_path[0], name + '.mka'))
+                os.remove(os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + '.mkv'))
+                if filepath.get('-pt2', null) != null and os.path.exists(filepath['-mkapath']):
+                    os.remove(filepath['-mkapath'])
+                elif os.path.exists(filepath['-mkapath']):
+                    os.remove(filepath['-mkapath'])
             if filepath.get('-appendcommand', null) != null:
-                if os.path.exists(os.path.join(out_path[0], name + ' pt1 AI1.mkv')) and os.path.exists(os.path.join(out_path[0], name + ' pt2 AI1.mkv')):
+                if os.path.exists(os.path.join(get_drive_path(out_path[0], filepath, False), name + ' pt1 AI1.mkv')) and os.path.exists(os.path.join(get_drive_path(out_path[0], filepath, False), name + ' pt2 AI1.mkv')):
                     append_command = make_append_command(filepath)
                     if DEBUG:
                         print('Append command: ')
@@ -574,8 +574,8 @@ def final_pass(filepath, filename):
                         subprocess.call(append_command)
                         save_json_state(filepath, 'append')
                     if filepath.get('-cleanmerge', null) != null:
-                        os.remove(os.path.join(out_path[0], name + ' pt1 AI1.mkv'))
-                        os.remove(os.path.join(out_path[0], name + ' pt2 AI1.mkv'))
+                        os.remove(os.path.join(get_drive_path(out_path[0], filepath, False), name + ' pt1 AI1.mkv'))
+                        os.remove(os.path.join(get_drive_path(out_path[0], filepath, False), name + ' pt2 AI1.mkv'))
         if REMOVETAGS:
             editCommand = MKVEDIT + ' "' + os.path.join(out_path[0], filepath['-name'] + '.mkv') + ('" -e track:1 -d color-ma'
                           'trix-coefficients -d color-range -d color-transfer-characteristics -d color-primaries')
@@ -662,6 +662,8 @@ def populate_options(file_path):
     the_way['-pass2'] = False
     the_way['-out'] = newpath
     the_way['-folders'] = deque()
+    the_way['toDrive'] = OTHER_DRIVE
+    the_way['fromDrive'] = PREDIR
     dar = get_dar(the_way, ext)
     if DEBUG:
         print(dar)
@@ -685,6 +687,7 @@ def run_ff(q, out, repo):
         if q.empty():
             break
         king = q.get()
+        check_make_dirs(king)
         if king.get('-ff', null) != null:
             out.put(ff_pass(king))
         else:
@@ -867,15 +870,23 @@ def generate_vpy(the_way, the_file):
 
 def make_merge_command(the_way, filename):
     the_command = MKVMERGE + ' ' + the_way['-mergecommand'].replace('~', ' ')
-    the_command = the_command.replace('rxx1', os.path.join(the_way['-path'], filename + '.mkv'))
-    the_command = the_command.replace('rxxPt1', os.path.join(the_way['-path'], filename + '.mkv'))
+    if os.path.exists(os.path.join(get_drive_path(the_way['-path'], the_way, True), filename + '.mkv')):
+        the_command = the_command.replace('rxx1', os.path.join(get_drive_path(the_way['-path'], the_way, True), filename + '.mkv'))
+        the_command = the_command.replace('rxxPt1', os.path.join(get_drive_path(the_way['-path'], the_way, True), filename + '.mkv'))
+    else:
+        the_command = the_command.replace('rxx1', os.path.join(get_drive_path(the_way['-path'], the_way, False), filename + '.mkv'))
+        the_command = the_command.replace('rxxPt1', os.path.join(get_drive_path(the_way['-path'], the_way, False), filename + '.mkv'))
     the_command = the_command.replace('rxxOrigin', os.path.join(the_way['-path'], the_way['-file'] + '.mkv'))
     # the_command = the_command.replace('rxx2', os.path.join(the_way['-path'], the_way['-mkaname'] + '.mka'))
     the_command = the_command.replace('rxx2', the_way['-mkapath'])
     the_command = the_command.replace('rxxMka', the_way['-mkapath'])
     if the_way.get('-pt2', null) != null:
-        the_command = the_command.replace('rxx3', os.path.join(the_way['-path'], filename + '1.mkv'))
-        the_command = the_command.replace('rxxOut', os.path.join(the_way['-path'], filename + '1.mkv'))
+        if os.path.exists(os.path.join(get_drive_path(the_way['-path'], the_way, True), filename + '1.mkv')):
+            the_command = the_command.replace('rxx3', os.path.join(get_drive_path(the_way['-path'], the_way, True), filename + '1.mkv'))
+            the_command = the_command.replace('rxxOut', os.path.join(get_drive_path(the_way['-path'], the_way, True), filename + '1.mkv'))
+        else:
+            the_command = the_command.replace('rxx3', os.path.join(get_drive_path(the_way['-path'], the_way, False), filename + '1.mkv'))
+            the_command = the_command.replace('rxxOut', os.path.join(get_drive_path(the_way['-path'], the_way, False), filename + '1.mkv'))
     else:
         if the_way.get('-name', null) != null:
             the_command = the_command.replace('rxx3', os.path.join(the_way['-path'], the_way['-name'] + '.mkv'))
@@ -897,26 +908,42 @@ def make_append_command(the_way):
     else:
         name = the_way['-file']
     the_command = the_command.replace('rxx3', os.path.join(the_way['-path'], name + '.mkv'))
-    the_command = the_command.replace('rxx1', os.path.join(the_way['-path'], name + ' pt1 AI1.mkv'))
-    the_command = the_command.replace('rxx2', os.path.join(the_way['-path'], name + ' pt2 AI1.mkv'))
+    if os.path.exists(os.path.join(get_drive_path(the_way['-path'], the_way, True), name + ' pt1 AI1.mkv')):
+        the_command = the_command.replace('rxx1', os.path.join(get_drive_path(the_way['-path'], the_way, True), name + ' pt1 AI1.mkv'))
+        the_command = the_command.replace('rxxPt1', os.path.join(get_drive_path(the_way['-path'], the_way, True), name + ' pt1 AI1.mkv'))
+    else:
+        the_command = the_command.replace('rxx1', os.path.join(get_drive_path(the_way['-path'], the_way, False), name + ' pt1 AI1.mkv'))
+        the_command = the_command.replace('rxxPt1', os.path.join(get_drive_path(the_way['-path'], the_way, False), name + ' pt1 AI1.mkv'))
+    if os.path.exists(os.path.join(get_drive_path(the_way['-path'], the_way, True), name + ' pt2 AI1.mkv')):
+        the_command = the_command.replace('rxx2', os.path.join(get_drive_path(the_way['-path'], the_way, True), name + ' pt2 AI1.mkv'))
+        the_command = the_command.replace('rxxPt2', os.path.join(get_drive_path(the_way['-path'], the_way, True), name + ' pt2 AI1.mkv'))
+    else:
+        the_command = the_command.replace('rxx2', os.path.join(get_drive_path(the_way['-path'], the_way, False), name + ' pt2 AI1.mkv'))
+        the_command = the_command.replace('rxxPt2', os.path.join(get_drive_path(the_way['-path'], the_way, False), name + ' pt2 AI1.mkv'))
     the_command = the_command.replace('rxx4', name)
     the_command = the_command.replace('rxxOut', os.path.join(the_way['-path'], name + '.mkv'))
-    the_command = the_command.replace('rxxPt1', os.path.join(the_way['-path'], name + ' pt1 AI1.mkv'))
-    the_command = the_command.replace('rxxPt2', os.path.join(the_way['-path'], name + ' pt2 AI1.mkv'))
     the_command = the_command.replace('rxxTitle', name)
     return the_command
 
 
 def remove_some_file(filepath, filename):
     if filename[-2:] == 'ff' or filename[-3:] == 'vpy':
-        if os.path.exists(os.path.join(filepath['-path'], filename[:-5] + 'ff.mkv')):
-            os.remove(os.path.join(filepath['-path'], filename[:-5] + 'ff.mkv'))
-        if os.path.exists(os.path.join(filepath['-path'], filename[:-3] + 'vpy.mkv')):
-            os.remove(os.path.join(filepath['-path'], filename[:-3] + 'vpy.mkv'))
-        if os.path.exists(os.path.join(filepath['-path'], filename[:-2] + 'ff.mkv')):
-            os.remove(os.path.join(filepath['-path'], filename[:-2] + 'ff.mkv'))
-        if os.path.exists(os.path.join(filepath['-path'], filename[:-2] + ' ff.mkv')):
-            os.remove(os.path.join(filepath['-path'], filename[:-2] + ' ff.mkv'))
+        if os.path.exists(os.path.join(get_drive_path(filepath['-path'], filepath, True), filename[:-5] + 'ff.mkv')):
+            os.remove(os.path.join(get_drive_path(filepath['-path'], filepath, True), filename[:-5] + 'ff.mkv'))
+        if os.path.exists(os.path.join(get_drive_path(filepath['-path'], filepath, True), filename[:-3] + 'vpy.mkv')):
+            os.remove(os.path.join(get_drive_path(filepath['-path'], filepath, True), filename[:-3] + 'vpy.mkv'))
+        if os.path.exists(os.path.join(get_drive_path(filepath['-path'], filepath, True), filename[:-2] + 'ff.mkv')):
+            os.remove(os.path.join(get_drive_path(filepath['-path'], filepath, True), filename[:-2] + 'ff.mkv'))
+        if os.path.exists(os.path.join(get_drive_path(filepath['-path'], filepath, True), filename[:-2] + ' ff.mkv')):
+            os.remove(os.path.join(get_drive_path(filepath['-path'], filepath, True), filename[:-2] + ' ff.mkv'))
+        if os.path.exists(os.path.join(get_drive_path(filepath['-path'], filepath, False), filename[:-5] + 'ff.mkv')):
+            os.remove(os.path.join(get_drive_path(filepath['-path'], filepath, False), filename[:-5] + 'ff.mkv'))
+        if os.path.exists(os.path.join(get_drive_path(filepath['-path'], filepath, False), filename[:-3] + 'vpy.mkv')):
+            os.remove(os.path.join(get_drive_path(filepath['-path'], filepath, False), filename[:-3] + 'vpy.mkv'))
+        if os.path.exists(os.path.join(get_drive_path(filepath['-path'], filepath, False), filename[:-2] + 'ff.mkv')):
+            os.remove(os.path.join(get_drive_path(filepath['-path'], filepath, False), filename[:-2] + 'ff.mkv'))
+        if os.path.exists(os.path.join(get_drive_path(filepath['-path'], filepath, False), filename[:-2] + ' ff.mkv')):
+            os.remove(os.path.join(get_drive_path(filepath['-path'], filepath, False), filename[:-2] + ' ff.mkv'))
 
 
 def get_json_state(filepath):
@@ -927,6 +954,7 @@ def get_json_state(filepath):
     if os.path.exists(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '_run.json')):
         state_file = open(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '_run.json'), 'r')
         state = json.load(state_file)
+        state_file.close()
     return state
 
 
@@ -940,6 +968,7 @@ def save_json_state(filepath, what_pass):
     state[what_pass] = 'done'
     outfile = open(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '_run.json'), 'w')
     json.dump(state, outfile)
+    outfile.close()
 
 
 def make_beta_environment_variable(beta_env=None):
@@ -970,6 +999,26 @@ def env_run_command(theWay, command, output):
             subprocess.call(command, env=debugenv)
         else:
             subprocess.call(command)
+
+
+def get_drive_path(thepath, theway, isfrom):
+    oldpath = thepath[3:]
+    if isfrom:
+        return theway['fromDrive'] + oldpath
+    return theway['toDrive'] + oldpath
+
+
+def swap_drive_path(theway):
+    temppath = theway['toDrive']
+    theway['toDrive'] = theway['fromDrive']
+    theway['fromDrive'] = temppath
+    return theway
+
+
+def check_make_dirs(theway):
+    finalpath = get_drive_path(theway['-path'], theway, False)
+    if not os.path.exists(finalpath):
+        os.makedirs(finalpath, exist_ok=True)
 
 
 if __name__ == '__main__':
