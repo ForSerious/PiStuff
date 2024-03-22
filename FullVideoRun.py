@@ -122,7 +122,7 @@ def ff_pass(filepath):
             decimate = '-r ' + filepath['-r'] + ' ' + decimate
             generate_vpy(filepath, filepath['-file'])
             command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -f vapoursynth -i "' + os.path.join(get_drive_path(filepath['-path'], filepath, True), filepath['-file'] +
-            '.vpy') + '" -y ' + ss + t + '-map 0:v -map 0:a? -map 0:s? -map 0:d? -map 0:t? ' + decimate + '-c:v libx265 -crf' \
+            '.vpy') + '" -y ' + ss + t + '-map 0:v:0 -map 0:a? -map 0:s? -map 0:d? -map 0:t? ' + decimate + '-c:v libx265 -crf' \
             ' 12 -preset veryfast "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + '.mkv') + '"'
         if filepath.get('-vpy', null) == null and filepath.get('-deinterlace', null) != null:
             #if not os.path.exists(os.path.join(out_path[0], out_path[1])):
@@ -137,14 +137,14 @@ def ff_pass(filepath):
             #now_tif = True
         if filepath.get('-deinterlace', null) == null:
             command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -i "' + os.path.join(get_drive_path(filepath['-path'], filepath, True),
-                      filepath['-file'] + '.' + filepath['-ext']) + '" -y ' + ss + t + '-map 0:v -map 0:a? -map 0:s? -map 0:d? -map 0:t? ' + yadif + \
+                      filepath['-file'] + '.' + filepath['-ext']) + '" -y ' + ss + t + '-map 0:v:0 -map 0:a? -map 0:s? -map 0:d? -map 0:t? ' + yadif + \
                       r + dering + '-c:v libx265 -crf 12 -preset veryfast -c:a copy -c:s copy -max_muxing_queue_size 4096 "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] +
                       '.mkv') + '"'
             if filepath.get('-vpy', null) != null:
                 generate_vpy(filepath, out_path[1])
                 run_three = True
                 command3 = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -f vapoursynth -i "' + os.path.join(get_drive_path(filepath['-path'], filepath, True), out_path[1] +
-                '.vpy') + '" -y -map 0:v -map 0:a? -map 0:s? -map 0:d? -map 0:t? ' + r + decimate + '-c:v libx265 -crf' \
+                '.vpy') + '" -y -map 0:v:0 -map 0:a? -map 0:s? -map 0:d? -map 0:t? ' + r + decimate + '-c:v libx265 -crf' \
                 ' 12 -preset veryfast "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + 'vpy' + '.mkv') + '"'
                 out_path = (filepath['-path'], out_path[1] + 'vpy')
                 filepath['-out'] = out_path[1]
@@ -156,7 +156,7 @@ def ff_pass(filepath):
         else:
             name = out_path[1]
         command2 = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -i "' + os.path.join(get_drive_path(filepath['-path'], filepath, True),
-        filepath['-file'] + '.' + filepath['-ext']) + '" -y ' + ss + t + '-map 0:v -map 0:a? -map 0:s? -map' \
+        filepath['-file'] + '.' + filepath['-ext']) + '" -y ' + ss + t + '-map 0:v:0 -map 0:a? -map 0:s? -map' \
         ' 0:d? -map 0:t? ' + r + '-vn -c:a copy -c:s copy -c:d copy "' + os.path.join(get_drive_path(out_path[0], filepath, False), name + '.mka') + '"'
         filepath['-mkapath'] = os.path.join(out_path[0], name + '.mka')
         filepath['-mkaname'] = name
@@ -678,7 +678,7 @@ def populate_options(file_path):
     if the_way.get('-crf', null) != null:
         global CRF
         CRF = the_way['-crf']
-    the_way['-mkapath'] = os.path.join(file_path[0], file_path[1])
+    the_way['-originpath'] = os.path.join(file_path[0], file_path[1])
     if the_way.get('-r', null) == null:
         print('You forgot -r!')
         return None
