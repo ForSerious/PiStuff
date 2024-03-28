@@ -454,12 +454,12 @@ def prot_pass(filepath, filename):
     if filepath.get('-scale', 'null') != null:
         scale = filepath['-scale']
     if filepath.get('-auto', 'null') != null:
-        command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -thread_queue_size 4096 -i "' \
-                  + os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + fext) + '"' + filt + debuglog + ' -filter_complex scale=w=' + \
-                  filepath['-w'] + ':h=' + filepath['-h'] + ',setsar=1,tvai_up=model=' + theModel + ':scale=' + scale + ':w=0:h=0:preblur=' \
-                  '0:noise=0:details=0:halo=0:blur=0:compression=0:estimate=8:blend=' + blend + ':device=0:vram=1:instances=1,scale=w=1920:h=1' \
+        command = (TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -thread_queue_size 4096 -i "' \
+                  + os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + fext) + '"' +
+                   filt + debuglog + ' -filter_complex tvai_up=model=' + theModel + ':scale=' + scale + ':w=0:h=0:preblur=' \
+                  '0:noise=0:details=0:halo=0:blur=0:compression=0:estimate=20:blend=' + blend + ':device=0:vram=1:instances=1,scale=w=1920:h=1' \
                   '080:flags=lanczos:threads=0:force_original_aspect_ratio=decrease,pad=1920:1080:-1:-1:color' \
-                  '=black -c:v tiff -compression_algo deflate "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"'
+                  '=black -c:v tiff -compression_algo deflate "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"')
     else:
         prot_preblur = '-0.06'
         prot_noise = '0'
@@ -481,14 +481,14 @@ def prot_pass(filepath, filename):
         if filepath.get('-protpreblur', 'null') != null:
             prot_preblur = filepath['-protpreblur']
         if filepath.get('-protrta', 'null') != null or filepath.get('-protauto', 'null') != null:
-            prot_r_t_a = ':estimate=8'
-        command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' \
-                  + os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + fext) + '"' + filt + ' -filter_complex scale=w=' + \
-                  filepath['-w'] + ':h=' + filepath['-h'] + ',setsar=1,tvai_up=model=' + theModel + ':scale=' + scale + ':w=1920:h=1080:prebl' \
-                  'ur=' + prot_preblur + ':noise=' + prot_noise + ':details=' + prot_details + ':halo=' + prot_halo + ':blur=' + \
-                  prot_blur + ':compression=' + prot_compression + prot_r_t_a + ':blend=' + blend + ':device=0:vram=1:instances=1,scale=' \
-                  'w=1920:h=1080:flags=lanczos:threads=0:force_original_aspect_ratio=decrease,pad=1920:1080:-1:-1:color' \
-                  '=black -c:v tiff -compression_algo deflate "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"'
+            prot_r_t_a = ':estimate=20'
+        command = (TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "'
+                  + os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + fext) + '"' +
+                   filt + ' -filter_complex tvai_up=model=' + theModel + ':scale=' + scale + ':w=1920:h=1080:prebl'
+                  'ur=' + prot_preblur + ':noise=' + prot_noise + ':details=' + prot_details + ':halo=' + prot_halo + ':blur=' +
+                  prot_blur + ':compression=' + prot_compression + prot_r_t_a + ':blend=' + blend + ':device=0:vram=1:instances=1,scale=w=1600:h=1200:flags=lanczos:threads=0,setsar=1,scale='
+                  'w=1920:h=1080:flags=lanczos:threads=0:force_original_aspect_ratio=decrease,pad=1920:1080:-1:-1:color'
+                  '=black -c:v tiff -compression_algo deflate "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"')
     try:
         if DEBUG:
             print('The Command: ')
@@ -670,6 +670,7 @@ def populate_options(file_path):
     dar = get_dar(the_way, ext)
     if DEBUG:
         print(dar)
+    print(dar)
     the_way['-w'] = dar[0]
     the_way['-h'] = dar[1]
     the_way['-ext'] = ext
