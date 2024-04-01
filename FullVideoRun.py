@@ -441,8 +441,14 @@ def prot_pass(filepath, filename):
             raise
         pass
     scale = '2.25'
+    sarscale = ',scale=w=' + filepath['-wx2'] + ':h=' + filepath['-hx2'] + ',setsar=1'
+    squareratio = ''
+    if filepath['square']:
+        squareratio = 'scale=w=' + filepath['-w'] + ':h=' + filepath['-h'] + ',setsar=1,'
+        sarscale = ''
     if filepath.get('-hd', 'null') != null:
         scale = '1'
+        sarscale = ''
     theModel = 'prob-3'
     if filepath.get('-iris', 'null') != null:
         theModel = 'iris-1'
@@ -454,11 +460,11 @@ def prot_pass(filepath, filename):
     if filepath.get('-scale', 'null') != null:
         scale = filepath['-scale']
     if filepath.get('-auto', 'null') != null:
-        command = (TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -thread_queue_size 4096 -i "' \
+        command = (TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -thread_queue_size 4096 -i "'
                   + os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + fext) + '"' +
-                   filt + debuglog + ' -filter_complex tvai_up=model=' + theModel + ':scale=' + scale + ':w=0:h=0:preblur=' \
-                  '0:noise=0:details=0:halo=0:blur=0:compression=0:estimate=20:blend=' + blend + ':device=0:vram=1:instances=1,scale=w=1920:h=1' \
-                  '080:flags=lanczos:threads=0:force_original_aspect_ratio=decrease,pad=1920:1080:-1:-1:color' \
+                   filt + debuglog + ' -filter_complex ' + squareratio + 'tvai_up=model=' + theModel + ':scale=' + scale + ':w=0:h=0:preblur='
+                  '0:noise=0:details=0:halo=0:blur=0:compression=0:estimate=20:blend=' + blend + ':device=0:vram=1:instances=1' + sarscale + ',scale=w=1920:h=1'
+                  '080:flags=lanczos:threads=0:force_original_aspect_ratio=decrease,pad=1920:1080:-1:-1:color'
                   '=black -c:v tiff -compression_algo deflate "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"')
     else:
         prot_preblur = '-0.06'
@@ -484,9 +490,9 @@ def prot_pass(filepath, filename):
             prot_r_t_a = ':estimate=20'
         command = (TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "'
                   + os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + fext) + '"' +
-                   filt + ' -filter_complex tvai_up=model=' + theModel + ':scale=' + scale + ':w=1920:h=1080:prebl'
+                   filt + ' -filter_complex ' + squareratio + 'tvai_up=model=' + theModel + ':scale=' + scale + ':w=1920:h=1080:prebl'
                   'ur=' + prot_preblur + ':noise=' + prot_noise + ':details=' + prot_details + ':halo=' + prot_halo + ':blur=' +
-                  prot_blur + ':compression=' + prot_compression + prot_r_t_a + ':blend=' + blend + ':device=0:vram=1:instances=1,scale=w=1600:h=1200:flags=lanczos:threads=0,setsar=1,scale='
+                  prot_blur + ':compression=' + prot_compression + prot_r_t_a + ':blend=' + blend + ':device=0:vram=1:instances=1' + sarscale + ',scale='
                   'w=1920:h=1080:flags=lanczos:threads=0:force_original_aspect_ratio=decrease,pad=1920:1080:-1:-1:color'
                   '=black -c:v tiff -compression_algo deflate "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"')
     try:
@@ -563,7 +569,7 @@ def final_pass(filepath, filename):
                 name = filepath['-file']
             if filepath.get('-cleanmerge', null) != null:
                 os.remove(os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + '.mkv'))
-                if filepath.get('-pt2', null) != null and os.path.exists(filepath['-mkapath']):
+                if filepath.get('-pt2', null) != null and os.path.exists(filepath['-mkapath']) and filepath['-originpath'] != filepath['-mkapath']:
                     os.remove(filepath['-mkapath'])
                 elif os.path.exists(filepath['-mkapath']):
                     os.remove(filepath['-mkapath'])
@@ -667,15 +673,12 @@ def populate_options(file_path):
     the_way['-folders'] = deque()
     the_way['toDrive'] = OTHER_DRIVE
     the_way['fromDrive'] = PREDIR
-    dar = get_dar(the_way, ext)
-    if DEBUG:
-        print(dar)
-    print(dar)
-    the_way['-w'] = dar[0]
-    the_way['-h'] = dar[1]
+    the_way = get_dar(the_way, ext)
     the_way['-ext'] = ext
     if the_way.get('-name', null) != null:
         the_way['-name'] = the_way['-name'].replace('_', ' ')
+    else:
+        the_way['-name'] = the_way['-file'] + ' AI'
     if the_way.get('-crf', null) != null:
         global CRF
         CRF = the_way['-crf']
@@ -789,7 +792,22 @@ def get_dar(the_way, ext):
             dar2 = int(moremore_split[1])
     width = int(firstWidth * sar1 / sar2)
     height = int(width / dar1 * dar2)
-    return str(width), str(height)
+    if dar1 == 4 and dar2 == 3:
+        the_way['square'] = True
+    else:
+        the_way['square'] = False
+    the_way['-w'] = str(width)
+    the_way['-h'] = str(height)
+    the_way['-wx2'] = str(width * 2)
+    the_way['-hx2'] = str(height * 2)
+    the_way['-wx4'] = str(width * 4)
+    the_way['-hx4'] = str(height * 4)
+    if DEBUG:
+        print('-w ' + the_way['-w'])
+        print('-h ' + the_way['-h'])
+        print('-wx2 ' + the_way['-wx2'])
+        print('-hx2 ' + the_way['-hx2'])
+    return the_way
 
 
 def get_duration(the_way, ext):
@@ -881,7 +899,6 @@ def make_merge_command(the_way, filename):
         the_command = the_command.replace('rxx1', os.path.join(get_drive_path(the_way['-path'], the_way, False), filename + '.mkv'))
         the_command = the_command.replace('rxxPt1', os.path.join(get_drive_path(the_way['-path'], the_way, False), filename + '.mkv'))
     the_command = the_command.replace('rxxOrigin', os.path.join(the_way['-path'], the_way['-file'] + '.mkv'))
-    # the_command = the_command.replace('rxx2', os.path.join(the_way['-path'], the_way['-mkaname'] + '.mka'))
     the_command = the_command.replace('rxx2', the_way['-mkapath'])
     the_command = the_command.replace('rxxMka', the_way['-mkapath'])
     if the_way.get('-pt2', null) != null:
