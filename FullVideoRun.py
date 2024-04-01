@@ -562,6 +562,7 @@ def final_pass(filepath, filename):
             else:
                 name = filepath['-file']
             if filepath.get('-cleanmerge', null) != null:
+                #todo: fix these leaks
                 os.remove(os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + '.mkv'))
                 if filepath.get('-pt2', null) != null and os.path.exists(filepath['-mkapath']):
                     os.remove(filepath['-mkapath'])
@@ -679,6 +680,7 @@ def populate_options(file_path):
         global CRF
         CRF = the_way['-crf']
     the_way['-originpath'] = os.path.join(file_path[0], file_path[1])
+    the_way['-mkapath'] = os.path.join(file_path[0], file_path[1])
     if the_way.get('-r', null) == null:
         print('You forgot -r!')
         return None
