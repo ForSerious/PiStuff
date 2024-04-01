@@ -568,11 +568,11 @@ def final_pass(filepath, filename):
             else:
                 name = filepath['-file']
             if filepath.get('-cleanmerge', null) != null:
-                #todo: fix these leaks
-                os.remove(os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + '.mkv'))
+                if os.path.exists(os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + '.mkv')) and filepath['-originpath'] != os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '.mkv':
+                    os.remove(os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + '.mkv'))
                 if filepath.get('-pt2', null) != null and os.path.exists(filepath['-mkapath']) and filepath['-originpath'] != filepath['-mkapath']:
                     os.remove(filepath['-mkapath'])
-                elif os.path.exists(filepath['-mkapath']):
+                elif os.path.exists(filepath['-mkapath']) and filepath['-originpath'] != filepath['-mkapath']:
                     os.remove(filepath['-mkapath'])
             if filepath.get('-appendcommand', null) != null:
                 if os.path.exists(os.path.join(get_drive_path(out_path[0], filepath, False), name + ' pt1 AI1.mkv')) and os.path.exists(os.path.join(get_drive_path(out_path[0], filepath, False), name + ' pt2 AI1.mkv')):
