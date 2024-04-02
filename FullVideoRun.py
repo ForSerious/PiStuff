@@ -121,9 +121,11 @@ def ff_pass(filepath):
         if filepath.get('-vpy', null) != null and filepath.get('-deinterlace', null) != null:
             decimate = '-r ' + filepath['-r'] + ' ' + decimate
             generate_vpy(filepath, filepath['-file'])
-            command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -f vapoursynth -i "' + os.path.join(get_drive_path(filepath['-path'], filepath, True), filepath['-file'] +
-            '.vpy') + '" -y ' + ss + t + '-map 0:v:0 -map 0:a? -map 0:s? -map 0:d? -map 0:t? ' + decimate + '-c:v libx265 -crf' \
-            ' 12 -preset veryfast "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + '.mkv') + '"'
+            command = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -f vapoursynth -i "' +
+              os.path.join(get_drive_path(filepath['-path'], filepath, True), filepath['-file'] + '.vpy') +
+              '" -y ' + ss + t + '-map 0:v:0 -map 0:a? -map 0:s? -map 0:d? -map 0:t? ' + decimate + '-c:v libx265 -crf'
+              ' 12 -preset veryfast "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] +
+              '.mkv') + '"')
         if filepath.get('-vpy', null) == null and filepath.get('-deinterlace', null) != null:
             #if not os.path.exists(os.path.join(out_path[0], out_path[1])):
             #    os.mkdir(os.path.join(out_path[0], out_path[1]))
@@ -131,21 +133,24 @@ def ff_pass(filepath):
                 decimate = ',"shuffleframes=0|-1","decimate=' + decimate_tmp + '" '
             else:
                 decimate = ',"decimate=' + decimate_tmp + '" '
-            command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + os.path.join(get_drive_path(filepath['-path'], filepath, True),
-            filepath['-file'] + '.' + filepath['-ext']) + '" ' + ss + t + '-r ' + filepath['-r'] + ' -filter_complex setsar=1,bwdif=mode=1:parity=-1:deint=0' + decimate + '-c:v libx265 -crf' \
-            ' 12 -preset veryfast "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + '.mkv') + '"'
-            #now_tif = True
+            command = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + os.path.join(get_drive_path(
+                filepath['-path'], filepath, True), filepath['-file'] + '.' + filepath['-ext']) + '" ' + ss + t +
+                '-r ' + filepath['-r'] + ' -filter_complex setsar=1,bwdif=mode=1:parity=-1:deint=0' + decimate +
+                '-c:v libx265 -crf 12 -preset veryfast "' + os.path.join(get_drive_path(out_path[0], filepath,
+                False), out_path[1] + '.mkv') + '"')
         if filepath.get('-deinterlace', null) == null:
-            command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -i "' + os.path.join(get_drive_path(filepath['-path'], filepath, True),
-                      filepath['-file'] + '.' + filepath['-ext']) + '" -y ' + ss + t + '-map 0:v:0 -map 0:a? -map 0:s? -map 0:d? -map 0:t? ' + yadif + \
-                      r + dering + '-c:v libx265 -crf 12 -preset veryfast -c:a copy -c:s copy -max_muxing_queue_size 4096 "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] +
-                      '.mkv') + '"'
+            command = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -i "' + os.path.join(get_drive_path(
+                filepath['-path'], filepath, True), filepath['-file'] + '.' + filepath['-ext']) + '" -y ' + ss +
+                t + '-map 0:v:0 -map 0:a? -map 0:s? -map 0:d? -map 0:t? ' + yadif + r + dering + '-c:v libx265 -crf 12'
+                ' -preset veryfast -c:a copy -c:s copy -max_muxing_queue_size 4096 "' + os.path.join(get_drive_path(
+                out_path[0], filepath, False), out_path[1] + '.mkv') + '"')
             if filepath.get('-vpy', null) != null:
                 generate_vpy(filepath, out_path[1])
                 run_three = True
-                command3 = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -f vapoursynth -i "' + os.path.join(get_drive_path(filepath['-path'], filepath, True), out_path[1] +
-                '.vpy') + '" -y -map 0:v:0 -map 0:a? -map 0:s? -map 0:d? -map 0:t? ' + r + decimate + '-c:v libx265 -crf' \
-                ' 12 -preset veryfast "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + 'vpy' + '.mkv') + '"'
+                command3 = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -f vapoursynth -i "' + os.path.join(
+                    get_drive_path(filepath['-path'], filepath, True), out_path[1] + '.vpy') + '" -y -map 0:v:0'
+                    ' -map 0:a? -map 0:s? -map 0:d? -map 0:t? ' + r + decimate + '-c:v libx265 -crf 12 -preset veryfas'
+                    't "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + 'vpy' + '.mkv') + '"')
                 out_path = (filepath['-path'], out_path[1] + 'vpy')
                 filepath['-out'] = out_path[1]
         if filepath.get('-name', null) != null:
@@ -213,6 +218,7 @@ def amq_pass(filepath, filename):
         if exc.errno != errno.EEXIST:
             raise
         pass
+    sar = get_sar_things(filepath)
     blend = '0'
     if filepath.get('-blend', 'null') != null:
         blend = filepath['-blend']
@@ -220,19 +226,23 @@ def amq_pass(filepath, filename):
         t_noise = filepath.get('-tnoise', '-0.39')
         t_blur = filepath.get('-tblur', '0.0')
         t_comp = filepath.get('-tcomp', '0.33')
-        command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + \
-                  os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + get_ext(filepath['-ext'])) + '" -r ' + filepath['-r'] + debuglog + ' -filter_complex scale=w=' + filepath['-w'] + ':h=' + \
-                  filepath['-h'] + ',setsar=1,tvai_up=model=thf-4:scale=1.0:w=' + filepath['-w'] + ':h=' + filepath['-h'] + \
-                  ':noise=' + t_noise + ':blur=' + t_blur + ':compression=' + t_comp + ':device=0:vram=1:instances=1 -c:v tiff -compression_algo deflate "' + \
-                  os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"'
+        command = (TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' +
+                  os.path.join(get_drive_path(filepath['-path'], filepath, True), filename +
+                  get_ext(filepath['-ext'])) + '" -r ' + filepath['-r'] + debuglog + ' -filter_complex ' + sar[1] +
+                  'tvai_up=model=thf-4:scale=1.0:w=' + filepath['-w'] + ':h=' + filepath['-h'] +
+                  ':noise=' + t_noise + ':blur=' + t_blur + ':compression=' + t_comp + ':device=0:vram=1:instances=1'
+                  ' -c:v tiff -compression_algo deflate "' +
+                  os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"')
     elif filepath.get('-nyx', null) != null:
-        n_version = filepath.get('-nyxver', '2')
+        n_version = filepath.get('-nyxver', '1')
         if n_version == '2':
             n_version = 'nyx-2'
         if n_version == '1':
             n_version = 'nyx-1'
         if n_version == '3':
             n_version = 'nxf-1'
+        if n_version == '4':
+            n_version = 'nyx-3'
         n_comp = filepath.get('-nyxcomp', '0')
         n_details = filepath.get('-nyxdetails', '0')
         n_blur = filepath.get('-nyxblur', '0')
@@ -243,19 +253,23 @@ def amq_pass(filepath, filename):
         n_auto = ''
         if filepath.get('-nyxauto', null) != null:
             n_auto = ':estimate=8'
-        command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + \
-                  os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + get_ext(filepath['-ext'])) + '" -r ' + filepath['-r'] + debuglog + ' -filter_complex scale=w=' + filepath['-w'] + ':h=' + \
-                  filepath['-h'] + ',setsar=1,tvai_up=model=' + n_version + ':scale=1:preblur=' + n_preblur + ':noise=' + n_noise + \
-                  ':details=' + n_details + ':halo=' + n_halo + ':blur=' + n_blur + ':compression=' + n_comp + ':blend=' + n_blend + n_auto + ':dev' \
-                  'ice=0:vram=1:instances=1 -c:v tiff -compression_algo deflate "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"'
+        command = (TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' +
+                  os.path.join(get_drive_path(filepath['-path'], filepath, True), filename +
+                  get_ext(filepath['-ext'])) + '" -r ' + filepath['-r'] + debuglog + ' -filter_complex ' + sar[1] +
+                  'tvai_up=model=' + n_version + ':scale=1:preblur=' + n_preblur + ':noise=' + n_noise +
+                  ':details=' + n_details + ':halo=' + n_halo + ':blur=' + n_blur + ':compression=' + n_comp +
+                  ':blend=' + n_blend + n_auto + ':device=0:vram=1:instances=1 -c:v tiff -compression_algo deflate "' +
+                  os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"')
     else:
         am = 'amq-13'
         if filepath.get('-high', null) != null:
             am = 'ahq-12'
-        command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + \
-                  os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + get_ext(filepath['-ext'])) + '" -r ' + filepath['-r'] + debuglog + ' -filter_complex scale=w=' + filepath['-w'] + ':h=' + filepath['-h'] + ',' \
-                  'setsar=1,tvai_up=model=' + am + ':scale=1.0:w=' + filepath['-w'] + ':h=' + filepath['-h'] + ':blend=' + blend + ':device=0:vra' \
-                  'm=1:instances=1 -c:v tiff -compression_algo deflate "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"'
+        command = (TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' +
+                  os.path.join(get_drive_path(filepath['-path'], filepath, True), filename +
+                  get_ext(filepath['-ext'])) + '" -r ' + filepath['-r'] + debuglog + ' -filter_complex ' + sar[1] +
+                  'tvai_up=model=' + am + ':scale=1.0:w=' + filepath['-w'] + ':h=' + filepath['-h'] + ':blend=' +
+                  blend + ':device=0:vram=1:instances=1 -c:v tiff -compression_algo deflate "' +
+                  os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"')
     try:
         if DEBUG:
             print('The Command: ')
@@ -314,9 +328,11 @@ def apo_pass(filepath, filename):
     if DEBUG:
         debuglog = ' -report'
     try:
-        command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin' \
-                 + debuglog + frame + ' -y -i "' + os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + get_ext(filepath['-ext'])) + '" -filter_complex tvai_fi=model=' + model + ':slowmo=2.5:rdt=0.000001:device=0:vram=1:in' \
-                  'stances=0 -c:v tiff -compression_algo deflate "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"'
+        command = (TVAI + ' -hide_banner -stats_period 2.0 -nostdin'
+                 + debuglog + frame + ' -y -i "' + os.path.join(get_drive_path(filepath['-path'], filepath, True),
+                 filename + get_ext(filepath['-ext'])) + '" -filter_complex tvai_fi=model=' + model + ':slowmo=2.5:'
+                 'rdt=0.000001:device=0:vram=1:instances=0 -c:v tiff -compression_algo deflate "' +
+                   os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"')
         if DEBUG:
             print('The Command: ')
             print(command)
@@ -376,21 +392,21 @@ def ahq_pass(filepath, filename):
     model = 'ahq-12'
     if filepath.get('-med', 'null') != null:
         model = 'amq-13'
-    scale = '2.25'
+    sar = get_sar_things(filepath)
+    scale = sar[2]
     if filepath.get('-gaia', 'null') != null:
         scale = '0'
         model = 'ghq-5'
-    if filepath.get('-hd', 'null') != null:
-        scale = '1'
     blend = '0'
     if filepath.get('-blend', 'null') != null:
         blend = filepath['-blend']
-    command = TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' \
-              + os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + get_ext(filepath['-ext'])) + '"' + debuglog + ' -filter_complex scale=w=' + \
-              filepath['-w'] + ':h=' + filepath['-h'] + ',setsar=1,tvai_up=model=' + model + ':scale=' + scale + ':w=1920:h=1080:blend=' + blend + ':device' \
-              '=0:vram=1:instances=1,scale=w=1920:h=1080:flags=lanczos:threads=0:force_original_aspect_ratio=decrease,p' \
-              'ad=1920:1080:-1:-1:color=black -c:v tiff -compression_algo deflate "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + \
-              '\\%6d.tif"'
+    command = (TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "'
+              + os.path.join(get_drive_path(filepath['-path'], filepath, True), filename +
+              get_ext(filepath['-ext'])) + '"' + debuglog + ' -filter_complex ' + sar[1] + 'tvai_up=model=' + model +
+              ':scale=' + scale + ':w=1920:h=1080:blend=' + blend + ':device=0:vram=1:instances=1' + sar[0] + ',scal'
+              'e=w=1920:h=1080:flags=lanczos:threads=0:force_original_aspect_ratio=decrease,pad=1920:1080:-1:-1:color'
+              '=black -c:v tiff -compression_algo deflate "' + os.path.join(get_drive_path(out_path[0],
+              filepath, False), out_path[1]) + '\\%6d.tif"')
     try:
         if DEBUG:
             print('The Command: ')
@@ -440,15 +456,10 @@ def prot_pass(filepath, filename):
         if exc.errno != errno.EEXIST:
             raise
         pass
-    scale = '2.25'
-    sarscale = ',scale=w=' + filepath['-wx2'] + ':h=' + filepath['-hx2'] + ',setsar=1'
-    squareratio = ''
-    if filepath['square']:
-        squareratio = 'scale=w=' + filepath['-w'] + ':h=' + filepath['-h'] + ',setsar=1,'
-        sarscale = ''
-    if filepath.get('-hd', 'null') != null:
-        scale = '1'
-        sarscale = ''
+    sarparams = get_sar_things(filepath)
+    sarscale = sarparams[0]
+    squareratio = sarparams[1]
+    scale = sarparams[2]
     theModel = 'prob-3'
     if filepath.get('-iris', 'null') != null:
         theModel = 'iris-1'
@@ -463,7 +474,7 @@ def prot_pass(filepath, filename):
         command = (TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -thread_queue_size 4096 -i "'
                   + os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + fext) + '"' +
                    filt + debuglog + ' -filter_complex ' + squareratio + 'tvai_up=model=' + theModel + ':scale=' + scale + ':w=0:h=0:preblur='
-                  '0:noise=0:details=0:halo=0:blur=0:compression=0:estimate=20:blend=' + blend + ':device=0:vram=1:instances=1' + sarscale + ',scale=w=1920:h=1'
+                  '0:noise=0:details=0:halo=0:blur=0:compression=0:estimate=8:blend=' + blend + ':device=0:vram=1:instances=1' + sarscale + ',scale=w=1920:h=1'
                   '080:flags=lanczos:threads=0:force_original_aspect_ratio=decrease,pad=1920:1080:-1:-1:color'
                   '=black -c:v tiff -compression_algo deflate "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"')
     else:
@@ -487,7 +498,7 @@ def prot_pass(filepath, filename):
         if filepath.get('-protpreblur', 'null') != null:
             prot_preblur = filepath['-protpreblur']
         if filepath.get('-protrta', 'null') != null or filepath.get('-protauto', 'null') != null:
-            prot_r_t_a = ':estimate=20'
+            prot_r_t_a = ':estimate=8'
         command = (TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "'
                   + os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + fext) + '"' +
                    filt + ' -filter_complex ' + squareratio + 'tvai_up=model=' + theModel + ':scale=' + scale + ':w=1920:h=1080:prebl'
@@ -541,10 +552,12 @@ def final_pass(filepath, filename):
     if filepath.get('-hd', null) != null or filepath.get('-bluray', null) != null:
         color_specs = 'p=709:t=601:m=470bg:r=tv:c=left'
     try:
-        command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -framerate ' + (get_r(filepath)[4:]) + ' -y -i "' + \
-                  os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + get_ext(filepath['-ext'])) + '" -c:v libx265 -crf ' + CRF + ' -pix_fmt' \
-             ' yuv420p -preset slow -x265-params aq-mode=3 -sws_flags spline+accurate_rnd+full_chroma_int -vf "zscale=pin=bt709:min=gbr:tin=bt709:rin=pc:agamma=false:d=error_diffusion:' + color_specs + ',format=yuv420p" -color_range tv ' \
-             ' "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + '.mkv') + '"'
+        command = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -framerate ' + (get_r(filepath)[4:]) + ' -y -i "' +
+             os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + get_ext(filepath['-ext'])) +
+             '" -c:v libx265 -crf ' + CRF + ' -pix_fmt yuv420p -preset slow -x265-params aq-mode=3 -sws_flags spline'
+             '+accurate_rnd+full_chroma_int -vf "zscale=pin=bt709:min=gbr:tin=bt709:rin=pc:agamma=false:d=error_diffu'
+             'sion:' + color_specs + ',format=yuv420p" -color_range tv "' + os.path.join(get_drive_path(out_path[0],
+             filepath, False), out_path[1] + '.mkv') + '"')
         if filepath['-ext'] != 'tif':
             command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + \
                       os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -an -sn -map_chapters -1 -c:v libx265 -crf ' \
@@ -568,14 +581,19 @@ def final_pass(filepath, filename):
             else:
                 name = filepath['-file']
             if filepath.get('-cleanmerge', null) != null:
-                if os.path.exists(os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + '.mkv')) and filepath['-originpath'] != os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '.mkv':
+                if os.path.exists(os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] +
+                '.mkv')) and filepath['-originpath'] != os.path.join(get_drive_path(out_path[0], filepath, False),
+                out_path[1]) + '.mkv':
                     os.remove(os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + '.mkv'))
-                if filepath.get('-pt2', null) != null and os.path.exists(filepath['-mkapath']) and filepath['-originpath'] != filepath['-mkapath']:
+                if (filepath.get('-pt2', null) != null and os.path.exists(filepath['-mkapath']) and
+                filepath['-originpath'] != filepath['-mkapath']):
                     os.remove(filepath['-mkapath'])
                 elif os.path.exists(filepath['-mkapath']) and filepath['-originpath'] != filepath['-mkapath']:
                     os.remove(filepath['-mkapath'])
             if filepath.get('-appendcommand', null) != null:
-                if os.path.exists(os.path.join(get_drive_path(out_path[0], filepath, False), name + ' pt1 AI1.mkv')) and os.path.exists(os.path.join(get_drive_path(out_path[0], filepath, False), name + ' pt2 AI1.mkv')):
+                if os.path.exists(os.path.join(get_drive_path(out_path[0], filepath, False), name +
+                ' pt1 AI1.mkv')) and os.path.exists(os.path.join(get_drive_path(out_path[0], filepath, False),
+                name + ' pt2 AI1.mkv')):
                     append_command = make_append_command(filepath)
                     if DEBUG:
                         print('Append command: ')
@@ -600,6 +618,25 @@ def final_pass(filepath, filename):
             os.remove(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '_run.json'))
         remove_some_file(filepath, filepath['-file'] + pt2 + 'ff')
     return (True, out_path[1])
+
+
+def get_sar_things(filepath):
+    scale = '2.25'
+    sarscale = ',scale=w=' + filepath['-wx2'] + ':h=' + filepath['-hx2'] + ',setsar=1'
+    squareratio = ''
+    dosquare = False
+    if not filepath['square']:
+        squareratio = 'scale=w=' + filepath['-w'] + ':h=' + filepath['-h'] + ',setsar=1,'
+        sarscale = ''
+        dosquare = True
+    if filepath.get('-hd', 'null') != null:
+        scale = '1'
+        sarscale = ''
+    if filepath.get('squareDone', False):
+        squareratio = ''
+    if dosquare:
+        filepath['squareDone'] = True
+    return sarscale, squareratio, scale
 
 
 def clean_images(file_path, final=False):
@@ -884,7 +921,8 @@ def generate_vpy(the_way, the_file):
                  'clip = core.std.SetFrameProp(clip=clip, prop="_ColorRange", intval=1)\n' \
                  'clip = core.std.AssumeFPS(clip=clip, fpsnum=' + ifps + ', fpsden=' + fpsden + ')\n' \
                  + deinterlace + \
-                 'clip = havsfunc.QTGMC(Input=clip, TFF=' + TFF + ',Preset="Placebo", NoiseProcess=1, ChromaNoise=True, Denoiser="KNLMeansCL", DenoiseMC=True, NoiseTR=2, Sigma=' + sigma + ')\n' \
+                 'clip = havsfunc.QTGMC(Input=clip, TFF=' + TFF + ',Preset="Placebo", NoiseProcess=1, ChromaNoise=True,'\
+                 ' Denoiser="KNLMeansCL", DenoiseMC=True, NoiseTR=2, Sigma=' + sigma + ')\n' \
                  + decimate + 'clip = clip[::2]\n' \
                  'clip = core.std.AssumeFPS(clip=clip, fpsnum=' + ofps + ', fpsden=' + fpsden + ')\nclip.set_output()\n'
     f_out_put = open(os.path.join(the_way['-path'], the_file + '.vpy'), 'w')
