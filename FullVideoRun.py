@@ -120,7 +120,7 @@ def ff_pass(filepath):
             decimate = '-vf "decimate=cycle=5:dupthresh=1.1" '
         if filepath.get('-vpy', null) != null and filepath.get('-deinterlace', null) != null:
             decimate = '-r ' + filepath['-r'] + ' ' + decimate
-            if filepath.get('-nnedi3', null) != null:
+            if filepath.get('-nnedi3', null) != null or filepath.get('-nnedi3cl', null) != null:
                 generate_nnedi3_vpy(filepath, filepath['-file'])
             else:
                 generate_vpy(filepath, filepath['-file'])
@@ -887,9 +887,6 @@ def generate_vpy(the_way, the_file):
             field = '2'
         deinterlace = 'clip = core.std.SetFrameProp(clip=clip, prop="_FieldBased", intval=' + field + ')\n' \
         'clip = havsfunc.QTGMC(Input=clip, Preset="Placebo", TFF=' + TFF + ')\n'
-        if the_way.get('-deinterlace', null) == 'nnedi3':
-            deinterlace = 'clip = core.std.SetFrameProp(clip=clip, prop="_FieldBased", intval=' + field + ')\n' \
-                'clip = havsfunc.QTGMC(Input=clip, Preset="Placebo", TFF=' + TFF + ')\n'
         deinterlace = deinterlace + bob
     ifps = '30000'
     ofps = '30000'
@@ -905,20 +902,11 @@ def generate_vpy(the_way, the_file):
         if the_way['-ifps'] == '60' or the_way['-ifps'] == '59':
             ifps = '30000'
             ofps = '60000'
-    denoise_level = '1.0'
-    source_noise_type = '0'
     sigma = '2.0'
     if the_way.get('-denoiselevel', null) != null:
-        denoise_level = the_way['-denoiselevel']
         sigma = the_way['-denoiselevel']
     if the_way.get('-noisesigma', null) != null:
         sigma = the_way['-noisesigma']
-    if the_way.get('-sourcenoisetype', null) != null:
-        source_noise_type = the_way['-sourcenoisetype']
-    decimate = ''
-    # if the_way.get('-decimate', null) != null:
-    #     decimate = 'clip = core.vivtc.VDecimate(clip , cycle=5, chroma=0)\n'
-    #     ofps = '24000'
     the_script = 'import os\nimport sys\nimport vapoursynth as vs\ncore = vs.core\n' \
                  'import havsfunc\nclip = core.lsmas.LWLibavSource(source="' + the_way['-path'].replace('\\', '/') + '/' + the_file + '.' \
                  + the_way['-ext'] + '", format="YUV420P8", stream_index=0, cache=0, prefer_hw=0)\n' \
@@ -928,9 +916,8 @@ def generate_vpy(the_way, the_file):
                  'clip = core.std.SetFrameProp(clip=clip, prop="_ColorRange", intval=1)\n' \
                  'clip = core.std.AssumeFPS(clip=clip, fpsnum=' + ifps + ', fpsden=' + fpsden + ')\n' \
                  + deinterlace + \
-                 'clip = havsfunc.QTGMC(Input=clip, TFF=' + TFF + ',Preset="Placebo", NoiseProcess=1, ChromaNoise=True,'\
-                 ' Denoiser="KNLMeansCL", DenoiseMC=True, NoiseTR=2, Sigma=' + sigma + ')\n' \
-                 + decimate + 'clip = clip[::2]\n' \
+                 'clip = havsfunc.QTGMC(Input=clip, TFF=' + TFF + ', Preset="Placebo", NoiseProcess=1, ChromaNoise=True,'\
+                 ' Denoiser="KNLMeansCL", DenoiseMC=True, NoiseTR=2, Sigma=' + sigma + ')\nclip = clip[::2]\n' \
                  'clip = core.std.AssumeFPS(clip=clip, fpsnum=' + ofps + ', fpsden=' + fpsden + ')\nclip.set_output()\n'
     f_out_put = open(os.path.join(the_way['-path'], the_file + '.vpy'), 'w')
     f_out_put.write(the_script)
@@ -950,6 +937,9 @@ def generate_nnedi3_vpy(the_way, the_file):
         nnedi3_size = the_way['-nnedi3size']
     deinterlace = 'clip = core.std.SetFrameProp(clip=clip, prop="_FieldBased", intval=' + field + ')\n' \
          'clip = core.nnedi3.nnedi3(clip=clip, field=' + field + ', nsize=' + nnedi3_size + ', nns=4, qual=2, pscrn=4, exp=2)\n'
+    if the_way.get('-nnedi3cl', null) != null:
+        deinterlace = 'clip = core.std.SetFrameProp(clip=clip, prop="_FieldBased", intval=' + field + ')\n' \
+             'clip = core.nnedi3cl.NNEDI3CL(clip=clip, field=' + field + ', nsize=' + nnedi3_size + ', nns=4, qual=2, pscrn=2)\n'
     ifps = '30000'
     ofps = '30000'
     fpsden = '1001'
