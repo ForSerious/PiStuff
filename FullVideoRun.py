@@ -120,7 +120,10 @@ def ff_pass(filepath):
             decimate = '-vf "decimate=cycle=5:dupthresh=1.1" '
         if filepath.get('-vpy', null) != null and filepath.get('-deinterlace', null) != null:
             decimate = '-r ' + filepath['-r'] + ' ' + decimate
-            generate_vpy(filepath, filepath['-file'])
+            if filepath.get('-nnedi3', null) != null:
+                generate_nnedi3_vpy(filepath, filepath['-file'])
+            else:
+                generate_vpy(filepath, filepath['-file'])
             command = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -f vapoursynth -i "' +
               os.path.join(get_drive_path(filepath['-path'], filepath, True), filepath['-file'] + '.vpy') +
               '" -y ' + ss + t + '-map 0:v:0 -map 0:a? -map 0:s? -map 0:d? -map 0:t? ' + decimate + '-c:v libx265 -crf'
@@ -197,6 +200,8 @@ def ff_pass(filepath):
     filepath['-took'] = the_name + ' time: ' + seconds_to_str(ff_end - ff_start)
     filepath['-sort'] = ff_end - ff_start
     filepath['-runtot'] = filepath['-sort']
+    if filepath.get('-vpy', null) != null:
+        filepath = swap_drive_path(filepath)
     return swap_drive_path(filepath)
 
 
@@ -881,8 +886,10 @@ def generate_vpy(the_way, the_file):
             bob = ''
             field = '2'
         deinterlace = 'clip = core.std.SetFrameProp(clip=clip, prop="_FieldBased", intval=' + field + ')\n' \
-        'clip = havsfunc.QTGMC(Input=clip, Preset="Placebo", TFF=' + TFF + ')\n' #\
-        #'clip = core.std.SetFieldBased(clip, ' + field +')\n'
+        'clip = havsfunc.QTGMC(Input=clip, Preset="Placebo", TFF=' + TFF + ')\n'
+        if the_way.get('-deinterlace', null) == 'nnedi3':
+            deinterlace = 'clip = core.std.SetFrameProp(clip=clip, prop="_FieldBased", intval=' + field + ')\n' \
+                'clip = havsfunc.QTGMC(Input=clip, Preset="Placebo", TFF=' + TFF + ')\n'
         deinterlace = deinterlace + bob
     ifps = '30000'
     ofps = '30000'
@@ -924,6 +931,48 @@ def generate_vpy(the_way, the_file):
                  'clip = havsfunc.QTGMC(Input=clip, TFF=' + TFF + ',Preset="Placebo", NoiseProcess=1, ChromaNoise=True,'\
                  ' Denoiser="KNLMeansCL", DenoiseMC=True, NoiseTR=2, Sigma=' + sigma + ')\n' \
                  + decimate + 'clip = clip[::2]\n' \
+                 'clip = core.std.AssumeFPS(clip=clip, fpsnum=' + ofps + ', fpsden=' + fpsden + ')\nclip.set_output()\n'
+    f_out_put = open(os.path.join(the_way['-path'], the_file + '.vpy'), 'w')
+    f_out_put.write(the_script)
+    f_out_put.close()
+
+
+def generate_nnedi3_vpy(the_way, the_file):
+    field = '1'
+    if the_way.get('-bottomfield', null) != null:
+        field = '0'
+    if the_way.get('-bob', null) != null:
+        field = '2'
+    if the_way.get('-bob2', null) != null:
+        field = '3'
+    nnedi3_size = '6'
+    if the_way.get('-nnedi3size', null) != null:
+        nnedi3_size = the_way['-nnedi3size']
+    deinterlace = 'clip = core.std.SetFrameProp(clip=clip, prop="_FieldBased", intval=' + field + ')\n' \
+         'clip = core.nnedi3.nnedi3(clip=clip, field=' + field + ', nsize=' + nnedi3_size + ', nns=4, qual=2, pscrn=4, exp=2)\n'
+    ifps = '30000'
+    ofps = '30000'
+    fpsden = '1001'
+    if the_way.get('-ifps', null) != null:
+        if the_way['-ifps'] == '24':
+            ifps = '24'
+            ofps = '24'
+            fpsden = '1'
+        if the_way['-ifps'] == '23':
+            ifps = '24000'
+            ofps = '24000'
+        if the_way['-ifps'] == '60' or the_way['-ifps'] == '59':
+            ifps = '30000'
+            ofps = '60000'
+    the_script = 'import vapoursynth as vs\ncore = vs.core\n' \
+                 'clip = core.lsmas.LWLibavSource(source="' + the_way['-path'].replace('\\', '/') + '/' + the_file + '.' \
+                 + the_way['-ext'] + '", format="YUV420P8", stream_index=0, cache=0, prefer_hw=0)\n' \
+                 'clip = core.std.SetFrameProps(clip, _Matrix=5)\n' \
+                 'clip = clip if not core.text.FrameProps(clip,"_Transfer") else core.std.SetFrameProps(clip, _Transfer=5)\n' \
+                 'clip = clip if not core.text.FrameProps(clip,"_Primaries") else core.std.SetFrameProps(clip, _Primaries=5)\n' \
+                 'clip = core.std.SetFrameProp(clip=clip, prop="_ColorRange", intval=1)\n' \
+                 'clip = core.std.AssumeFPS(clip=clip, fpsnum=' + ifps + ', fpsden=' + fpsden + ')\n' \
+                 + deinterlace + \
                  'clip = core.std.AssumeFPS(clip=clip, fpsnum=' + ofps + ', fpsden=' + fpsden + ')\nclip.set_output()\n'
     f_out_put = open(os.path.join(the_way['-path'], the_file + '.vpy'), 'w')
     f_out_put.write(the_script)

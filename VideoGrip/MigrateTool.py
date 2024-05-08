@@ -7,7 +7,6 @@ from time import time, strftime, localtime
 
 DEBUG = False
 null = 'null'
-# Cut and frame rate correction processes
 OVERRIDEFILE = 'G:\\Code\\PiStuff\\VideoGrip\\Options.txt'
 TEMPLATE = 'G:\\Code\\PiStuff\\VideoGrip\\Template.json'
 FOLDERS = 'G:\\Code\\PiStuff\\VideoGrip\\MigrateList.txt'
