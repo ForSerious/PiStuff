@@ -8,6 +8,7 @@ from datetime import timedelta
 from multiprocessing import Process, JoinableQueue
 from time import time, strftime, localtime
 from collections import deque
+from clrprint import clrprint
 
 DEBUG = False
 BETA = False
@@ -196,7 +197,7 @@ def ff_pass(filepath):
     the_name = filepath['-out']
     if filepath.get('-name', null) != null:
         the_name = filepath['-name']
-    filepath['-took'] = the_name + ' time: ' + seconds_to_str(ff_end - ff_start)
+    filepath['-took'] = the_name + 'time:' + seconds_to_str(ff_end - ff_start)
     filepath['-sort'] = ff_end - ff_start
     filepath['-runtot'] = filepath['-sort']
     if filepath.get('-vpy', null) != null:
@@ -292,7 +293,7 @@ def amq_pass(filepath, filename):
     the_name = filepath['-out']
     if filepath.get('-name', null) != null:
         the_name = filepath['-name']
-    filepath['-took'] = the_name + ' time: ' + seconds_to_str(ff_end - ff_start)
+    filepath['-took'] = the_name + 'time:' + seconds_to_str(ff_end - ff_start)
     filepath['-sort'] = ff_end - ff_start
     if filepath.get('-runtot', None) is not None:
         filepath['-runtot'] = filepath['-runtot'] + filepath['-sort']
@@ -354,7 +355,7 @@ def apo_pass(filepath, filename):
     the_name = filepath['-out']
     if filepath.get('-name', null) != null:
         the_name = filepath['-name']
-    filepath['-took'] = the_name + ' time: ' + seconds_to_str(ff_end - ff_start)
+    filepath['-took'] = the_name + 'time:' + seconds_to_str(ff_end - ff_start)
     filepath['-sort'] = ff_end - ff_start
     if filepath.get('-runtot', None) is not None:
         filepath['-runtot'] = filepath['-runtot'] + filepath['-sort']
@@ -429,7 +430,7 @@ def ahq_pass(filepath, filename):
     the_name = filepath['-out']
     if filepath.get('-name', null) != null:
         the_name = filepath['-name']
-    filepath['-took'] = the_name + ' time: ' + seconds_to_str(ff_end - ff_start)
+    filepath['-took'] = the_name + 'time:' + seconds_to_str(ff_end - ff_start)
     if filepath.get('-runtot', None) is not None:
         filepath['-runtot'] = filepath['-runtot'] + (ff_end - ff_start)
     else:
@@ -528,7 +529,7 @@ def prot_pass(filepath, filename):
     the_name = filepath['-out']
     if filepath.get('-name', null) != null:
         the_name = filepath['-name']
-    filepath['-took'] = the_name + ' time: ' + seconds_to_str(ff_end - ff_start)
+    filepath['-took'] = the_name + 'time:' + seconds_to_str(ff_end - ff_start)
     if filepath.get('-runtot', None) is not None:
         filepath['-runtot'] = filepath['-runtot'] + (ff_end - ff_start)
     else:
@@ -654,11 +655,11 @@ def clean_images(file_path, final=False):
                 i_num = i_num + 1
             os.rmdir(the_dir)
             del_end = time()
-            print('Removed ' + str(i_num) + ' images.')
+            clrprint('Removed', str(i_num), 'images.', clr='d,b,d')
             the_name = file_path['-file']
             if file_path.get('-name', null) != null:
                 the_name = file_path['-name']
-            print(the_name + '  del time: ' + seconds_to_str(del_end - del_start))
+            clrprint(the_name, 'del time:', seconds_to_str(del_end - del_start), clr='y,d,b')
             if len(file_path['-folders']) > 0 and final is True:
                 clean_images(file_path, True)
 
@@ -683,12 +684,12 @@ def convert_song(file_path):
         finstart = time()
         output = final_pass(file_path, output[1])
         finend = time()
-        print(the_name + '  fin time: ' + seconds_to_str(finend - finstart))
+        clrprint(the_name, 'fin time:', seconds_to_str(finend - finstart), clr='y,d,b')
     if DEBUG:
         print('Fin output: ' + output[1])
     clean_images(file_path, True)
     totend = time()
-    print('Total ' + the_name + ' time: ' + seconds_to_str(file_path.get('-runtot', 0.0) + (totend - totstart)) + '\n')
+    clrprint('Total', the_name, 'time:', seconds_to_str(file_path.get('-runtot', 0.0) + (totend - totstart)) + '\n', clr='g,y,g,b')
     return output
 
 
@@ -696,11 +697,11 @@ def populate_options(file_path):
     ext = file_path[1][-3:]
     newpath = file_path[1][:-4]
     if os.path.exists(os.path.join(file_path[0], newpath + '.json')):
-        print('Populating: ' + newpath)
+        clrprint('Populating:', newpath, clr='d,y')
         run_file = open(os.path.join(file_path[0], newpath + '.json'), 'r')
         the_way = json.load(run_file)
     elif os.path.exists(os.path.join(file_path[0], newpath + '.txt')):
-        print('Populating: ' + newpath)
+        clrprint('Populating:', newpath, clr='d,y')
         optionsFile = open(os.path.join(file_path[0], newpath + '.txt'), 'r', -1, 'utf-8')
         optionslist = optionsFile.readlines()
         the_way = read_options(optionslist)
@@ -727,7 +728,7 @@ def populate_options(file_path):
     the_way['-originpath'] = os.path.join(file_path[0], file_path[1])
     the_way['-mkapath'] = os.path.join(file_path[0], file_path[1])
     if the_way.get('-r', null) == null:
-        print('You forgot -r!')
+        clrprint('You forgot -r!', clr='r')
         return None
     return the_way
 
@@ -742,7 +743,7 @@ def run_ff(q, out, repo):
             out.put(ff_pass(king))
         else:
             out.put(king)
-        repo.put((king.get('-took', 'ff 00:00:00'), king.get('-runtot', 0.0)))
+        repo.put((king.get('-took', '00:00:00'), king.get('-runtot', 0.0)))
         q.task_done()
     return out
 
@@ -1120,56 +1121,67 @@ def check_make_dirs(theway):
         os.makedirs(finalpath, exist_ok=True)
 
 
+def get_details_for_printing(took_string):
+    found_index = took_string.find('time:')
+    if found_index >= 0:
+        found_name = took_string[:found_index]
+        found_time = took_string[(found_index + 5):]
+    else:
+        found_name = ''
+        found_time = took_string
+    return [found_name, 'time:', found_time]
+
+
 def run_linearly(videos, start_l):
     for video_dude in videos:
-        print('Starting: ' + video_dude['-name'] + '\n')
+        clrprint('Starting:', video_dude['-name'] + '\n', clr='d,y')
         check_make_dirs(video_dude)
         if video_dude.get('-ff', null) != null:
-            print('Starting ffmpeg pass.')
+            clrprint('Starting ffmpeg pass.', clr='m')
             video_dude = ff_pass(video_dude)
-            print('ff pass took: ' + video_dude.get('-took', '00:00:00'))
-            print('Running total: ' + seconds_to_str(video_dude.get('-runtot', 0.0)) + '\n')
+            clrprint('ff pass took:', get_details_for_printing(video_dude.get('-took', '00:00:00'))[2], clr='d,b')
+            clrprint('Running total:', seconds_to_str(video_dude.get('-runtot', 0.0)) + '\n', clr='d,b')
         if video_dude.get('-amq', null) != null or video_dude.get('-nyx', null) != null or video_dude.get('-theia', null) != null:
-            print('Starting denoise pass.')
+            clrprint('Starting denoise pass.', clr='m')
             video_dude = amq_pass(video_dude, video_dude['-out'])
-            print('Denoise pass took: ' + video_dude.get('-took', '00:00:00'))
-            print('Running total: ' + seconds_to_str(video_dude.get('-runtot', 0.0)) + '\n')
+            clrprint('Denoise pass took:', get_details_for_printing(video_dude.get('-took', '00:00:00'))[2], clr='d,b')
+            clrprint('Running total:', seconds_to_str(video_dude.get('-runtot', 0.0)) + '\n', clr='d,b')
         if video_dude.get('-clean', null) != null:
             if os.path.exists(os.path.join(video_dude['-path'], video_dude['-out'][:-3] + '.vpy')):
                 os.remove(os.path.join(video_dude['-path'], video_dude['-out'][:-3] + '.vpy'))
             if os.path.exists(os.path.join(video_dude['-path'], video_dude['-file'] + '.vpy')):
                 os.remove(os.path.join(video_dude['-path'], video_dude['-file'] + '.vpy'))
         if video_dude.get('-ahq', null) != null or video_dude.get('-gaia', null) != null:
-            print('Starting enhancement pass.')
+            clrprint('Starting enhancement pass.', clr='m')
             video_dude = ahq_pass(video_dude, video_dude['-out'])
-            print('Enhancement pass took: ' + video_dude.get('-took', '00:00:00'))
-            print('Running total: ' + seconds_to_str(video_dude.get('-runtot', 0.0)) + '\n')
+            clrprint('Enhancement pass took:', get_details_for_printing(video_dude.get('-took', '00:00:00'))[2], clr='d,b')
+            clrprint('Running total:', seconds_to_str(video_dude.get('-runtot', 0.0)) + '\n', clr='d,b')
         elif video_dude.get('-prot', null) != null or video_dude.get('-iris', null) != null:
-            print('Starting enhancement pass.')
+            clrprint('Starting enhancement pass.', clr='m')
             video_dude = prot_pass(video_dude, video_dude['-out'])
-            print('Enhancement pass took: ' + video_dude.get('-took', '00:00:00'))
-            print('Running total: ' + seconds_to_str(video_dude.get('-runtot', 0.0)) + '\n')
+            clrprint('Enhancement pass took:', get_details_for_printing(video_dude.get('-took', '00:00:00'))[2], clr='d,b')
+            clrprint('Running total:', seconds_to_str(video_dude.get('-runtot', 0.0)) + '\n', clr='d,b')
         if (video_dude.get('-apo', null) != null or video_dude.get('-apf', null) != null or video_dude.get('-chr', null) != null
                 or video_dude.get('-chf', null) != null or video_dude.get('-aion', null) != null):
-            print('Starting interpolation pass.')
+            clrprint('Starting interpolation pass.', clr='m')
             video_dude = apo_pass(video_dude, video_dude['-out'])
-            print('Interpolation pass took: ' + video_dude.get('-took', '00:00:00'))
-            print('Running total: ' + seconds_to_str(video_dude.get('-runtot', 0.0)) + '\n')
-        print('Starting final pass.')
+            clrprint('Interpolation pass took:', get_details_for_printing(video_dude.get('-took', '00:00:00'))[2], clr='d,b')
+            clrprint('Running total:', seconds_to_str(video_dude.get('-runtot', 0.0)) + '\n', clr='d,b')
+        clrprint('Starting final pass.', clr='m')
         convert_song(video_dude)
     end_l = time()
-    print('Total time: ' + seconds_to_str(end_l - start_l))
+    clrprint('Total time:', seconds_to_str(end_l - start_l), clr='g,b')
 
 
 if __name__ == '__main__':
     start = time()
-    print('Reading folders.')
+    clrprint('Reading folders.', clr='d')
     artistfile = open(FOLDERS, 'r', -1, 'utf-8')
     artistlist = artistfile.readlines()
     dirs = []
     for artist in artistlist:
         if DEBUG:
-            print(artist.strip())
+            clrprint(artist.strip(), clr='r')
         dirs.append(PREDIR + artist.strip())
     qTheStack = []
     for currentPath in dirs:
@@ -1178,8 +1190,6 @@ if __name__ == '__main__':
     if DEBUG:
         for elem in qTheStack:
             print(elem)
-    itemcount = 0
-    printcount = 1001
     bstart = time()
     OptionsStack = []
     AmountLoop = []
@@ -1198,7 +1208,7 @@ if __name__ == '__main__':
                 CopyOption['-sort'] = get_sort_num(CopyOption['-t2'])
                 AmountLoop.append(CopyOption)
     AmountLoop.sort(key=lambda item: (item['-sort']), reverse=True)
-    print(str(len(AmountLoop)) + ' Things loaded.' + '\n')
+    clrprint(str(len(AmountLoop)), 'Things loaded.' + '\n', clr='b,d')
     if LINEAR:
         run_linearly(AmountLoop, start)
     else:
@@ -1212,8 +1222,8 @@ if __name__ == '__main__':
             worker.daemon = True
             worker.start()
         for Bool in AmountLoop:
-            say = fftimes.get()
-            print(say[0])
+            say = get_details_for_printing(fftimes.get()[0])
+            clrprint(say[0], say[1], say[2], clr='y,d,b')
             fftimes.task_done()
         ffinput.join()
         amqinput = JoinableQueue()
@@ -1227,15 +1237,16 @@ if __name__ == '__main__':
         for thing in amqsort:
             amqinput.put(thing)
         amqoutput = JoinableQueue()
-        print('Starting denoise pass.')
+        clrprint('\nStarting denoise pass.', clr='m')
         for i in range(TVAINUM):
             worker = Process(target=run_amq, args=(amqinput, amqoutput, amqtimes))
             worker.daemon = True
             worker.start()
         for Bool in AmountLoop:
-            say = amqtimes.get()
-            print(say[0])
-            print('Running total: ' + seconds_to_str(say[1]) + '\n')
+            saywhat = amqtimes.get()
+            say = get_details_for_printing(saywhat[0])
+            clrprint(say[0], say[1], say[2], clr='y,d,b')
+            print('Running total: ' + seconds_to_str(saywhat[1]) + '\n')
             amqtimes.task_done()
         amqinput.join()
 
@@ -1250,15 +1261,16 @@ if __name__ == '__main__':
         for thing in aposort:
             apoinput.put(thing)
         apooutput = JoinableQueue()
-        print('Starting enhancement pass.')
+        clrprint('Starting enhancement pass.', clr='m')
         for i in range(TVAINUM):
             worker = Process(target=run_prot, args=(apoinput, apooutput, apotimes))
             worker.daemon = True
             worker.start()
         for Bool in AmountLoop:
-            say = apotimes.get()
-            print(say[0])
-            print('Running total: ' + seconds_to_str(say[1]) + '\n')
+            saywhat = apotimes.get()
+            say = get_details_for_printing(saywhat[0])
+            clrprint(say[0], say[1], say[2], clr='y,d,b')
+            clrprint('Running total:', seconds_to_str(saywhat[1]) + '\n', clr='d,b')
             apotimes.task_done()
         apoinput.join()
 
@@ -1273,33 +1285,24 @@ if __name__ == '__main__':
         protsort.sort(key=lambda item: (item['-sort']), reverse=True)
         for thing2 in protsort:
             protinput.put(thing2)
-        print('Starting interpolation pass.')
+        clrprint('Starting interpolation pass.', clr='m')
         for i in range(APONUM):
             worker = Process(target=run_apo, args=(protinput, protoutput, prottimes))
             worker.daemon = True
             worker.start()
         for Bool in AmountLoop:
-            say = prottimes.get()
-            print(say[0])
-            print('Running total: ' + seconds_to_str(say[1]) + '\n')
+            saywhat = prottimes.get()
+            say = get_details_for_printing(saywhat[0])
+            clrprint(say[0], say[1], say[2], clr='y,d,b')
+            clrprint('Running total:', seconds_to_str(saywhat[1]) + '\n', clr='d,b')
             prottimes.task_done()
         protinput.join()
-        print('Starting final pass.')
+        clrprint('Starting final pass.', clr='m')
         while not protoutput.empty():
             blh = protoutput.get()
-            smite = str(itemcount)
-            if len(smite) < 2:
-                smite = '0' + smite
             deets = convert_song(blh)
             if not deets[0]:
-                print(smite + ': ' + deets[1])
-            printcount = printcount - 1
-            if printcount == 0:
-                bend = time()
-                print(smite + ': ' + seconds_to_str(bend - bstart))
-                bstart = bend
-                printcount = 1000
-            itemcount = itemcount + 1
+                clrprint(deets[1], clr='r')
             protoutput.task_done()
         end = time()
-        print('Total time: ' + seconds_to_str(end - start))
+        clrprint('Total time:', seconds_to_str(end - start), clr='g,b')
