@@ -2,7 +2,6 @@ import errno
 import os
 import re
 import subprocess
-import sys
 import traceback
 import json
 from datetime import timedelta
@@ -34,7 +33,7 @@ APONUM = 1
 PREDIR = 'D:\\'
 FOLDERS = 'C:\\PiStuff\\FullRunList.txt'
 OTHER_DRIVE = 'S:\\'
-
+LINEAR = True
 
 def generate_next_file(rootdir):
     for path, dirlist, filelist in os.walk(rootdir):
@@ -686,7 +685,7 @@ def convert_song(file_path):
         finend = time()
         print(the_name + '  fin time: ' + seconds_to_str(finend - finstart))
     if DEBUG:
-        print('reco done: ' + output[1])
+        print('Fin output: ' + output[1])
     clean_images(file_path, True)
     totend = time()
     print('Total ' + the_name + ' time: ' + seconds_to_str(file_path.get('-runtot', 0.0) + (totend - totstart)) + '\n')
@@ -697,11 +696,11 @@ def populate_options(file_path):
     ext = file_path[1][-3:]
     newpath = file_path[1][:-4]
     if os.path.exists(os.path.join(file_path[0], newpath + '.json')):
-        print('Starting: ' + newpath)
+        print('Populating: ' + newpath)
         run_file = open(os.path.join(file_path[0], newpath + '.json'), 'r')
         the_way = json.load(run_file)
     elif os.path.exists(os.path.join(file_path[0], newpath + '.txt')):
-        print('Starting: ' + newpath)
+        print('Populating: ' + newpath)
         optionsFile = open(os.path.join(file_path[0], newpath + '.txt'), 'r', -1, 'utf-8')
         optionslist = optionsFile.readlines()
         the_way = read_options(optionslist)
@@ -1121,47 +1120,90 @@ def check_make_dirs(theway):
         os.makedirs(finalpath, exist_ok=True)
 
 
+def run_linearly(videos, start_l):
+    for video_dude in videos:
+        print('Starting: ' + video_dude['-name'] + '\n')
+        check_make_dirs(video_dude)
+        if video_dude.get('-ff', null) != null:
+            print('Starting ffmpeg pass.')
+            video_dude = ff_pass(video_dude)
+            print('ff pass took: ' + video_dude.get('-took', '00:00:00'))
+            print('Running total: ' + seconds_to_str(video_dude.get('-runtot', 0.0)) + '\n')
+        if video_dude.get('-amq', null) != null or video_dude.get('-nyx', null) != null or video_dude.get('-theia', null) != null:
+            print('Starting denoise pass.')
+            video_dude = amq_pass(video_dude, video_dude['-out'])
+            print('Denoise pass took: ' + video_dude.get('-took', '00:00:00'))
+            print('Running total: ' + seconds_to_str(video_dude.get('-runtot', 0.0)) + '\n')
+        if video_dude.get('-clean', null) != null:
+            if os.path.exists(os.path.join(video_dude['-path'], video_dude['-out'][:-3] + '.vpy')):
+                os.remove(os.path.join(video_dude['-path'], video_dude['-out'][:-3] + '.vpy'))
+            if os.path.exists(os.path.join(video_dude['-path'], video_dude['-file'] + '.vpy')):
+                os.remove(os.path.join(video_dude['-path'], video_dude['-file'] + '.vpy'))
+        if video_dude.get('-ahq', null) != null or video_dude.get('-gaia', null) != null:
+            print('Starting enhancement pass.')
+            video_dude = ahq_pass(video_dude, video_dude['-out'])
+            print('Enhancement pass took: ' + video_dude.get('-took', '00:00:00'))
+            print('Running total: ' + seconds_to_str(video_dude.get('-runtot', 0.0)) + '\n')
+        elif video_dude.get('-prot', null) != null or video_dude.get('-iris', null) != null:
+            print('Starting enhancement pass.')
+            video_dude = prot_pass(video_dude, video_dude['-out'])
+            print('Enhancement pass took: ' + video_dude.get('-took', '00:00:00'))
+            print('Running total: ' + seconds_to_str(video_dude.get('-runtot', 0.0)) + '\n')
+        if (video_dude.get('-apo', null) != null or video_dude.get('-apf', null) != null or video_dude.get('-chr', null) != null
+                or video_dude.get('-chf', null) != null or video_dude.get('-aion', null) != null):
+            print('Starting interpolation pass.')
+            video_dude = apo_pass(video_dude, video_dude['-out'])
+            print('Interpolation pass took: ' + video_dude.get('-took', '00:00:00'))
+            print('Running total: ' + seconds_to_str(video_dude.get('-runtot', 0.0)) + '\n')
+        print('Starting final pass.')
+        convert_song(video_dude)
+    end_l = time()
+    print('Total time: ' + seconds_to_str(end_l - start_l))
+
+
 if __name__ == '__main__':
-    if len(sys.argv) <= 1:
-        start = time()
-        print('Reading folders.')
-        artistfile = open(FOLDERS, 'r', -1, 'utf-8')
-        artistlist = artistfile.readlines()
-        dirs = []
-        for artist in artistlist:
-            if DEBUG:
-                print(artist.strip())
-            dirs.append(PREDIR + artist.strip())
-        qTheStack = []
-        for currentPath in dirs:
-            for wFile in generate_next_file(currentPath):
-                qTheStack.append((wFile[0], wFile[1]))
+    start = time()
+    print('Reading folders.')
+    artistfile = open(FOLDERS, 'r', -1, 'utf-8')
+    artistlist = artistfile.readlines()
+    dirs = []
+    for artist in artistlist:
         if DEBUG:
-            for elem in qTheStack:
-                print(elem)
-        itemcount = 0
-        printcount = 1001
-        bstart = time()
-        OptionsStack = []
-        AmountLoop = []
+            print(artist.strip())
+        dirs.append(PREDIR + artist.strip())
+    qTheStack = []
+    for currentPath in dirs:
+        for wFile in generate_next_file(currentPath):
+            qTheStack.append((wFile[0], wFile[1]))
+    if DEBUG:
+        for elem in qTheStack:
+            print(elem)
+    itemcount = 0
+    printcount = 1001
+    bstart = time()
+    OptionsStack = []
+    AmountLoop = []
+    for dude in qTheStack:
+        option = populate_options(dude)
+        if option is not None:
+            OptionsStack.append(option)
+            if option.get('-t', null) != null:
+                option['-sort'] = get_sort_num(option['-t'])
+            else:
+                option['-sort'] = get_sort_num(get_duration(option, option['-ext']))
+            AmountLoop.append(option)
+            if option.get('-pt2', null) != null:
+                CopyOption = option.copy()
+                CopyOption['-pass2'] = True
+                CopyOption['-sort'] = get_sort_num(CopyOption['-t2'])
+                AmountLoop.append(CopyOption)
+    AmountLoop.sort(key=lambda item: (item['-sort']), reverse=True)
+    print(str(len(AmountLoop)) + ' Things loaded.' + '\n')
+    if LINEAR:
+        run_linearly(AmountLoop, start)
+    else:
         ffinput = JoinableQueue()
         fftimes = JoinableQueue()
-        for dude in qTheStack:
-            option = populate_options(dude)
-            if option is not None:
-                OptionsStack.append(option)
-                if option.get('-t', null) != null:
-                    option['-sort'] = get_sort_num(option['-t'])
-                else:
-                    option['-sort'] = get_sort_num(get_duration(option, option['-ext']))
-                AmountLoop.append(option)
-                if option.get('-pt2', null) != null:
-                    CopyOption = option.copy()
-                    CopyOption['-pass2'] = True
-                    CopyOption['-sort'] = get_sort_num(CopyOption['-t2'])
-                    AmountLoop.append(CopyOption)
-        AmountLoop.sort(key=lambda item: (item['-sort']), reverse=True)
-        print(str(len(AmountLoop)) + ' Things loaded.')
         for video in AmountLoop:
             ffinput.put(video)
         ff_out_put = JoinableQueue()
@@ -1261,5 +1303,3 @@ if __name__ == '__main__':
             protoutput.task_done()
         end = time()
         print('Total time: ' + seconds_to_str(end - start))
-    else:
-        print('Sorry, not going to work.')
