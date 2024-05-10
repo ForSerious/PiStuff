@@ -116,8 +116,8 @@ def ff_pass(filepath):
         now_tif = False
         decimate = ''
         if filepath.get('-decimate', null) != null:
-            #decimate = '-vf "shuffleframes=' + decimate_tmp + '" '
-            decimate = '-vf "decimate=cycle=5:dupthresh=1.1" '
+            # WWWW WWWW WWWW WWWW WWWW WXWWW WWWW WXWWW WWWXW WWWW WWWWX WXWWW
+            decimate = '-vf "decimate=cycle=5" '
         if filepath.get('-vpy', null) != null and filepath.get('-deinterlace', null) != null:
             decimate = '-r ' + filepath['-r'] + ' ' + decimate
             if filepath.get('-nnedi3', null) != null or filepath.get('-nnedi3cl', null) != null:
@@ -126,34 +126,32 @@ def ff_pass(filepath):
                 generate_vpy(filepath, filepath['-file'])
             command = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -f vapoursynth -i "' +
               os.path.join(get_drive_path(filepath['-path'], filepath, True), filepath['-file'] + '.vpy') +
-              '" -y ' + ss + t + '-map 0:v:0 -map 0:a? -map 0:s? -map 0:d? -map 0:t? ' + decimate + '-c:v libx265 -crf'
+              '" -y ' + ss + t + '-map 0:v:0 ' + decimate + '-c:v libx265 -crf'
               ' 12 -preset veryfast "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] +
               '.mkv') + '"')
         if filepath.get('-vpy', null) == null and filepath.get('-deinterlace', null) != null:
-            #if not os.path.exists(os.path.join(out_path[0], out_path[1])):
-            #    os.mkdir(os.path.join(out_path[0], out_path[1]))
             if filepath.get('-bob', null) == null and filepath.get('-decimate', null) != null:
-                decimate = ',"shuffleframes=0|-1","decimate=' + decimate_tmp + '" '
+                decimate = ',decimate=cycle=2' + decimate_tmp + ' '
             else:
-                decimate = ',"decimate=' + decimate_tmp + '" '
+                decimate = decimate_tmp + ' '
             command = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + os.path.join(get_drive_path(
                 filepath['-path'], filepath, True), filepath['-file'] + '.' + filepath['-ext']) + '" ' + ss + t +
-                '-r ' + filepath['-r'] + ' -filter_complex setsar=1,bwdif=mode=1:parity=-1:deint=0' + decimate +
+                '-r ' + filepath['-r'] + ' -map 0:v:0 -filter_complex setsar=1,bwdif=mode=1:parity=-1:deint=0' + decimate +
                 '-c:v libx265 -crf 12 -preset veryfast "' + os.path.join(get_drive_path(out_path[0], filepath,
                 False), out_path[1] + '.mkv') + '"')
         if filepath.get('-deinterlace', null) == null:
             command = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -i "' + os.path.join(get_drive_path(
                 filepath['-path'], filepath, True), filepath['-file'] + '.' + filepath['-ext']) + '" -y ' + ss +
-                t + '-map 0:v:0 -map 0:a? -map 0:s? -map 0:d? -map 0:t? ' + yadif + r + dering + '-c:v libx265 -crf 12'
+                t + '-map 0:v:0 ' + yadif + r + dering + '-c:v libx265 -crf 12'
                 ' -preset veryfast -c:a copy -c:s copy -max_muxing_queue_size 4096 "' + os.path.join(get_drive_path(
                 out_path[0], filepath, False), out_path[1] + '.mkv') + '"')
             if filepath.get('-vpy', null) != null:
                 generate_vpy(filepath, out_path[1])
                 run_three = True
                 command3 = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -f vapoursynth -i "' + os.path.join(
-                    get_drive_path(filepath['-path'], filepath, True), out_path[1] + '.vpy') + '" -y -map 0:v:0'
-                    ' -map 0:a? -map 0:s? -map 0:d? -map 0:t? ' + r + decimate + '-c:v libx265 -crf 12 -preset veryfas'
-                    't "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + 'vpy' + '.mkv') + '"')
+                    get_drive_path(filepath['-path'], filepath, True), out_path[1] + '.vpy') + '" -y -map 0:v:0 '
+                    + r + decimate + '-c:v libx265 -crf 12 -preset veryfast "' + os.path.join(
+                    get_drive_path(out_path[0], filepath, False), out_path[1] + 'vpy' + '.mkv') + '"')
                 out_path = (filepath['-path'], out_path[1] + 'vpy')
                 filepath['-out'] = out_path[1]
         if filepath.get('-name', null) != null:
@@ -620,7 +618,10 @@ def final_pass(filepath, filename):
         if filepath['-pass2']:
             pt2 = 'pt2'
         if os.path.exists(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '_run.json')):
-            os.remove(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '_run.json'))
+            if not LINEAR:
+                os.remove(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '_run.json'))
+            else:
+                filepath['jsonRun'] = os.path.join(filepath['-path'], filepath['-file'] + pt2 + '_run.json')
         remove_some_file(filepath, filepath['-file'] + pt2 + 'ff')
     return (True, out_path[1])
 
@@ -656,9 +657,7 @@ def clean_images(file_path, final=False):
             os.rmdir(the_dir)
             del_end = time()
             clrprint('Removed', str(i_num), 'images.', clr='d,b,d')
-            the_name = file_path['-file']
-            if file_path.get('-name', null) != null:
-                the_name = file_path['-name']
+            the_name = get_name(file_path)
             clrprint(the_name, 'del time:', seconds_to_str(del_end - del_start), clr='y,d,b')
             if len(file_path['-folders']) > 0 and final is True:
                 clean_images(file_path, True)
@@ -672,14 +671,19 @@ def read_options(optionslist):
     return options
 
 
+def get_name(file_path):
+    the_name = file_path['-file']
+    if file_path.get('-name', null) != null:
+        the_name = file_path['-name']
+    return the_name
+
+
 def convert_song(file_path):
     if DEBUG:
         print(file_path)
     totstart = time()
     output = (True, file_path['-out'])
-    the_name = file_path['-file']
-    if file_path.get('-name', null) != null:
-        the_name = file_path['-name']
+    the_name = get_name(file_path)
     if file_path.get('-fin', null) != null:
         finstart = time()
         output = final_pass(file_path, output[1])
@@ -988,25 +992,17 @@ def make_merge_command(the_way, filename):
             the_command = the_command.replace('rxx3', os.path.join(get_drive_path(the_way['-path'], the_way, False), filename + '1.mkv'))
             the_command = the_command.replace('rxxOut', os.path.join(get_drive_path(the_way['-path'], the_way, False), filename + '1.mkv'))
     else:
-        if the_way.get('-name', null) != null:
-            the_command = the_command.replace('rxx3', os.path.join(the_way['-path'], the_way['-name'] + '.mkv'))
-            the_command = the_command.replace('rxxOut', os.path.join(the_way['-path'], the_way['-name'] + '.mkv'))
-            the_command = the_command.replace('rxx4', the_way['-name'])
-            the_command = the_command.replace('rxxTitle', the_way['-name'])
-        else:
-            the_command = the_command.replace('rxx3', os.path.join(the_way['-path'], the_way['-file'] + '.mkv'))
-            the_command = the_command.replace('rxxOut', os.path.join(the_way['-path'], the_way['-file'] + '.mkv'))
-            the_command = the_command.replace('rxx4', the_way['-file'])
-            the_command = the_command.replace('rxxTitle', the_way['-file'])
+        file_name = get_name(the_way)
+        the_command = the_command.replace('rxx3', str(os.path.join(the_way['-path'], file_name + '.mkv')))
+        the_command = the_command.replace('rxxOut', str(os.path.join(the_way['-path'], file_name + '.mkv')))
+        the_command = the_command.replace('rxx4', file_name)
+        the_command = the_command.replace('rxxTitle', file_name)
     return the_command
 
 
 def make_append_command(the_way):
     the_command = MKVMERGE + ' ' + the_way['-appendcommand'].replace('~', ' ')
-    if the_way.get('-name', null) != null:
-        name = the_way['-name']
-    else:
-        name = the_way['-file']
+    name = get_name(the_way)
     the_command = the_command.replace('rxx3', os.path.join(the_way['-path'], name + '.mkv'))
     if os.path.exists(os.path.join(get_drive_path(the_way['-path'], the_way, True), name + ' pt1 AI1.mkv')):
         the_command = the_command.replace('rxx1', os.path.join(get_drive_path(the_way['-path'], the_way, True), name + ' pt1 AI1.mkv'))
@@ -1132,45 +1128,51 @@ def get_details_for_printing(took_string):
     return [found_name, 'time:', found_time]
 
 
-def run_linearly(videos, start_l):
-    for video_dude in videos:
-        clrprint('Starting:', video_dude['-name'] + '\n', clr='d,y')
-        check_make_dirs(video_dude)
-        if video_dude.get('-ff', null) != null:
+def run_linearly(lVideos, fStart):
+    lJsonRuns = []
+    for oVideoSpec in lVideos:
+        clrprint('Starting:', oVideoSpec['-name'] + '\n', clr='d,y')
+        check_make_dirs(oVideoSpec)
+        if oVideoSpec.get('-ff', null) != null:
             clrprint('Starting ffmpeg pass.', clr='m')
-            video_dude = ff_pass(video_dude)
-            clrprint('ff pass took:', get_details_for_printing(video_dude.get('-took', '00:00:00'))[2], clr='d,b')
-            clrprint('Running total:', seconds_to_str(video_dude.get('-runtot', 0.0)) + '\n', clr='d,b')
-        if video_dude.get('-amq', null) != null or video_dude.get('-nyx', null) != null or video_dude.get('-theia', null) != null:
+            oVideoSpec = ff_pass(oVideoSpec)
+            clrprint('ff pass took:', get_details_for_printing(oVideoSpec.get('-took', '00:00:00'))[2], clr='d,b')
+            clrprint('Running total:', seconds_to_str(oVideoSpec.get('-runtot', 0.0)) + '\n', clr='d,b')
+        if oVideoSpec.get('-amq', null) != null or oVideoSpec.get('-nyx', null) != null or oVideoSpec.get('-theia', null) != null:
             clrprint('Starting denoise pass.', clr='m')
-            video_dude = amq_pass(video_dude, video_dude['-out'])
-            clrprint('Denoise pass took:', get_details_for_printing(video_dude.get('-took', '00:00:00'))[2], clr='d,b')
-            clrprint('Running total:', seconds_to_str(video_dude.get('-runtot', 0.0)) + '\n', clr='d,b')
-        if video_dude.get('-clean', null) != null:
-            if os.path.exists(os.path.join(video_dude['-path'], video_dude['-out'][:-3] + '.vpy')):
-                os.remove(os.path.join(video_dude['-path'], video_dude['-out'][:-3] + '.vpy'))
-            if os.path.exists(os.path.join(video_dude['-path'], video_dude['-file'] + '.vpy')):
-                os.remove(os.path.join(video_dude['-path'], video_dude['-file'] + '.vpy'))
-        if video_dude.get('-ahq', null) != null or video_dude.get('-gaia', null) != null:
+            oVideoSpec = amq_pass(oVideoSpec, oVideoSpec['-out'])
+            clrprint('Denoise pass took:', get_details_for_printing(oVideoSpec.get('-took', '00:00:00'))[2], clr='d,b')
+            clrprint('Running total:', seconds_to_str(oVideoSpec.get('-runtot', 0.0)) + '\n', clr='d,b')
+        if oVideoSpec.get('-clean', null) != null:
+            if os.path.exists(os.path.join(oVideoSpec['-path'], oVideoSpec['-out'][:-3] + '.vpy')):
+                os.remove(os.path.join(oVideoSpec['-path'], oVideoSpec['-out'][:-3] + '.vpy'))
+            if os.path.exists(os.path.join(oVideoSpec['-path'], oVideoSpec['-file'] + '.vpy')):
+                os.remove(os.path.join(oVideoSpec['-path'], oVideoSpec['-file'] + '.vpy'))
+        if oVideoSpec.get('-ahq', null) != null or oVideoSpec.get('-gaia', null) != null:
             clrprint('Starting enhancement pass.', clr='m')
-            video_dude = ahq_pass(video_dude, video_dude['-out'])
-            clrprint('Enhancement pass took:', get_details_for_printing(video_dude.get('-took', '00:00:00'))[2], clr='d,b')
-            clrprint('Running total:', seconds_to_str(video_dude.get('-runtot', 0.0)) + '\n', clr='d,b')
-        elif video_dude.get('-prot', null) != null or video_dude.get('-iris', null) != null:
+            oVideoSpec = ahq_pass(oVideoSpec, oVideoSpec['-out'])
+            clrprint('Enhancement pass took:', get_details_for_printing(oVideoSpec.get('-took', '00:00:00'))[2], clr='d,b')
+            clrprint('Running total:', seconds_to_str(oVideoSpec.get('-runtot', 0.0)) + '\n', clr='d,b')
+        elif oVideoSpec.get('-prot', null) != null or oVideoSpec.get('-iris', null) != null:
             clrprint('Starting enhancement pass.', clr='m')
-            video_dude = prot_pass(video_dude, video_dude['-out'])
-            clrprint('Enhancement pass took:', get_details_for_printing(video_dude.get('-took', '00:00:00'))[2], clr='d,b')
-            clrprint('Running total:', seconds_to_str(video_dude.get('-runtot', 0.0)) + '\n', clr='d,b')
-        if (video_dude.get('-apo', null) != null or video_dude.get('-apf', null) != null or video_dude.get('-chr', null) != null
-                or video_dude.get('-chf', null) != null or video_dude.get('-aion', null) != null):
+            oVideoSpec = prot_pass(oVideoSpec, oVideoSpec['-out'])
+            clrprint('Enhancement pass took:', get_details_for_printing(oVideoSpec.get('-took', '00:00:00'))[2], clr='d,b')
+            clrprint('Running total:', seconds_to_str(oVideoSpec.get('-runtot', 0.0)) + '\n', clr='d,b')
+        if (oVideoSpec.get('-apo', null) != null or oVideoSpec.get('-apf', null) != null or oVideoSpec.get('-chr', null) != null
+                or oVideoSpec.get('-chf', null) != null or oVideoSpec.get('-aion', null) != null):
             clrprint('Starting interpolation pass.', clr='m')
-            video_dude = apo_pass(video_dude, video_dude['-out'])
-            clrprint('Interpolation pass took:', get_details_for_printing(video_dude.get('-took', '00:00:00'))[2], clr='d,b')
-            clrprint('Running total:', seconds_to_str(video_dude.get('-runtot', 0.0)) + '\n', clr='d,b')
+            oVideoSpec = apo_pass(oVideoSpec, oVideoSpec['-out'])
+            clrprint('Interpolation pass took:', get_details_for_printing(oVideoSpec.get('-took', '00:00:00'))[2], clr='d,b')
+            clrprint('Running total:', seconds_to_str(oVideoSpec.get('-runtot', 0.0)) + '\n', clr='d,b')
         clrprint('Starting final pass.', clr='m')
-        convert_song(video_dude)
-    end_l = time()
-    clrprint('Total time:', seconds_to_str(end_l - start_l), clr='g,b')
+        convert_song(oVideoSpec)
+        if oVideoSpec.get('jsonRun', null) != null:
+            lJsonRuns.append(oVideoSpec['jsonRun'])
+    if len(lJsonRuns) > 0:
+        for sRun in lJsonRuns:
+            os.remove(sRun)
+    fEnd = time()
+    clrprint('Total time:', seconds_to_str(fEnd - fStart), clr='g,b')
 
 
 if __name__ == '__main__':
