@@ -35,6 +35,7 @@ PREDIR = 'D:\\'
 FOLDERS = 'C:\\PiStuff\\FullRunList.txt'
 OTHER_DRIVE = 'S:\\'
 LINEAR = True
+SORT = False
 
 def generate_next_file(rootdir):
     for path, dirlist, filelist in os.walk(rootdir):
@@ -1199,17 +1200,19 @@ if __name__ == '__main__':
         option = populate_options(dude)
         if option is not None:
             OptionsStack.append(option)
-            if option.get('-t', null) != null:
-                option['-sort'] = get_sort_num(option['-t'])
-            else:
-                option['-sort'] = get_sort_num(get_duration(option, option['-ext']))
+            if SORT:
+                if option.get('-t', null) != null:
+                    option['-sort'] = get_sort_num(option['-t'])
+                else:
+                    option['-sort'] = get_sort_num(get_duration(option, option['-ext']))
             AmountLoop.append(option)
             if option.get('-pt2', null) != null:
                 CopyOption = option.copy()
                 CopyOption['-pass2'] = True
                 CopyOption['-sort'] = get_sort_num(CopyOption['-t2'])
                 AmountLoop.append(CopyOption)
-    AmountLoop.sort(key=lambda item: (item['-sort']), reverse=True)
+    if SORT and not LINEAR:
+        AmountLoop.sort(key=lambda item: (item['-sort']), reverse=True)
     clrprint(str(len(AmountLoop)), 'Things loaded.' + '\n', clr='b,d')
     if LINEAR:
         run_linearly(AmountLoop, start)
