@@ -924,7 +924,23 @@ def generate_vpy(the_way, the_file):
         rad = '3'
         if the_way.get('-rad', null) != null:
             rad = the_way['-rad']
-        denoiser = 'clip = core.neo_fft3d.FFT3D(clip, sigma=' + sigma + ', bt=' + rad + ', ncpu=6)\n'
+        denoiser = 'clip = core.neo_fft3d.FFT3D(clip, sigma=' + sigma + ', bt=' + rad + ', ncpu=8)\n'
+    if the_way.get('-neovd', null) != null:
+        rad = '6'
+        percent = '85.0'
+        if the_way.get('-rad', null) != null:
+            rad = the_way['-rad']
+        if the_way.get('-percent', null) != null:
+            percent = the_way['-percent']
+        denoiser = ('clip = core.neo_vd.VagueDenoiser(clip, threshold=' + sigma + ', nsteps=' + rad + ', percent=' +
+                    percent + ')\n')
+    if the_way.get('-dfttest', null) != null:
+        # There are soooo many more parameters I could add.
+        sigma = '8.0'
+        rad = '0'
+        if the_way.get('-rad', null) != null:
+            rad = the_way['-rad']
+        denoiser = 'clip = core.neo_dfttest.DFTTest(clip, ftype=' + rad + ', sigma=' + sigma + ')'
     the_script = 'import vapoursynth as vs\ncore = vs.core\nimport havsfunc\n' \
                  'clip = core.lsmas.LWLibavSource(source="' + get_drive_path(the_way['-path'], the_way, False).replace('\\', '/') + '/' + the_file + '.' \
                  + the_way['-ext'] + '", format="YUV420P8", stream_index=0, cache=0, prefer_hw=0)\n' \
