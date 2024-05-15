@@ -162,10 +162,10 @@ def ff_pass(filepath):
                 name = filepath['-name']
         else:
             name = out_path[1]
-        command2 = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -i "' + os.path.join(get_drive_path(filepath['-path'], filepath, True),
-        filepath['-file'] + '.' + filepath['-ext']) + '" -y ' + ss + t + '-map 0:v:0 -map 0:a? -map 0:s? -map' \
-        ' 0:d? -map 0:t? ' + r + '-vn -c:a copy -c:s copy -c:d copy "' + os.path.join(get_drive_path(out_path[0], filepath, False), name + '.mka') + '"'
-        filepath['-mkapath'] = os.path.join(out_path[0], name + '.mka')
+        command2 = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -i "' + filepath['-originpath'] + '" -y ' +
+            ss + t + '-map 0:v:0 -map 0:a? -map 0:s? -map 0:d? -map 0:t? ' + r + '-vn -c:a copy -c:s copy -c:d copy "' +
+            os.path.join(get_drive_path(out_path[0], filepath, False), name + '.mka') + '"')
+        filepath['-mkapath'] = os.path.join(get_drive_path(out_path[0], filepath, False), name + '.mka')
         filepath['-mkaname'] = name
         if DEBUG:
             print('The Command: ')
@@ -912,17 +912,22 @@ def generate_vpy(the_way, the_file):
         sigma = the_way['-denoiselevel']
     if the_way.get('-noisesigma', null) != null:
         sigma = the_way['-noisesigma']
-    the_script = 'import os\nimport sys\nimport vapoursynth as vs\ncore = vs.core\n' \
-                 'import havsfunc\nclip = core.lsmas.LWLibavSource(source="' + the_way['-path'].replace('\\', '/') + '/' + the_file + '.' \
+    denoiser = 'clip = havsfunc.QTGMC(Input=clip, TFF=' + TFF + ', Preset="Placebo", NoiseProcess=1, ChromaNoise=True,' \
+               ' Denoiser="KNLMeansCL", DenoiseMC=True, NoiseTR=2, Sigma=' + sigma + ')\nclip = clip[::2]\n'
+    if the_way.get('-minideen', null) != null:
+        rad = '1,1,1'
+        if the_way.get('-rad', null) != null:
+            rad = the_way['-rad']
+        denoiser = 'clip = core.neo_minideen.MiniDeen(clip, radius=[' + rad + '], threshold=[10,12,12])\n'
+    the_script = 'import vapoursynth as vs\ncore = vs.core\nimport havsfunc\n' \
+                 'clip = core.lsmas.LWLibavSource(source="' + get_drive_path(the_way['-path'], the_way, False).replace('\\', '/') + '/' + the_file + '.' \
                  + the_way['-ext'] + '", format="YUV420P8", stream_index=0, cache=0, prefer_hw=0)\n' \
                  'clip = core.std.SetFrameProps(clip, _Matrix=5)\n' \
                  'clip = clip if not core.text.FrameProps(clip,"_Transfer") else core.std.SetFrameProps(clip, _Transfer=5)\n' \
                  'clip = clip if not core.text.FrameProps(clip,"_Primaries") else core.std.SetFrameProps(clip, _Primaries=5)\n' \
                  'clip = core.std.SetFrameProp(clip=clip, prop="_ColorRange", intval=1)\n' \
                  'clip = core.std.AssumeFPS(clip=clip, fpsnum=' + ifps + ', fpsden=' + fpsden + ')\n' \
-                 + deinterlace + \
-                 'clip = havsfunc.QTGMC(Input=clip, TFF=' + TFF + ', Preset="Placebo", NoiseProcess=1, ChromaNoise=True,'\
-                 ' Denoiser="KNLMeansCL", DenoiseMC=True, NoiseTR=2, Sigma=' + sigma + ')\nclip = clip[::2]\n' \
+                 + deinterlace + denoiser + \
                  'clip = core.std.AssumeFPS(clip=clip, fpsnum=' + ofps + ', fpsden=' + fpsden + ')\nclip.set_output()\n'
     f_out_put = open(os.path.join(the_way['-path'], the_file + '.vpy'), 'w')
     f_out_put.write(the_script)
