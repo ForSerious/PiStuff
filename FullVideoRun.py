@@ -940,7 +940,7 @@ def generate_vpy(the_way, the_file):
         rad = '0'
         if the_way.get('-rad', null) != null:
             rad = the_way['-rad']
-        denoiser = 'clip = core.neo_dfttest.DFTTest(clip, ftype=' + rad + ', sigma=' + sigma + ')'
+        denoiser = 'clip = core.neo_dfttest.DFTTest(clip, ftype=' + rad + ', sigma=' + sigma + ')\n'
     the_script = 'import vapoursynth as vs\ncore = vs.core\nimport havsfunc\n' \
                  'clip = core.lsmas.LWLibavSource(source="' + get_drive_path(the_way['-path'], the_way, False).replace('\\', '/') + '/' + the_file + '.' \
                  + the_way['-ext'] + '", format="YUV420P8", stream_index=0, cache=0, prefer_hw=0)\n' \
