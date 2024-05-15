@@ -912,35 +912,41 @@ def generate_vpy(the_way, the_file):
         sigma = the_way['-denoiselevel']
     if the_way.get('-noisesigma', null) != null:
         sigma = the_way['-noisesigma']
-    denoiser = 'clip = havsfunc.QTGMC(Input=clip, TFF=' + TFF + ', Preset="Placebo", NoiseProcess=1, ChromaNoise=True,' \
+    denoiser = ''
+    if the_way.get('-ezdenoise', null) != null:
+        denoiser = 'clip = havsfunc.QTGMC(Input=clip, TFF=' + TFF + ', Preset="Placebo", NoiseProcess=1, ChromaNoise=True,' \
                ' Denoiser="KNLMeansCL", DenoiseMC=True, NoiseTR=2, Sigma=' + sigma + ')\nclip = clip[::2]\n'
     if the_way.get('-minideen', null) != null:
         rad = '1,1,1'
         if the_way.get('-rad', null) != null:
             rad = the_way['-rad']
-        denoiser = 'clip = core.neo_minideen.MiniDeen(clip, radius=[' + rad + '], threshold=[10,12,12])\n'
+        denoiser = denoiser + 'clip = core.neo_minideen.MiniDeen(clip, radius=[' + rad + '], threshold=[10,12,12])\n'
     if the_way.get('-fft3d', null) != null:
         # can be -1 to 5
         rad = '3'
         if the_way.get('-rad', null) != null:
             rad = the_way['-rad']
-        denoiser = 'clip = core.neo_fft3d.FFT3D(clip, sigma=' + sigma + ', bt=' + rad + ', ncpu=8)\n'
+        denoiser = denoiser + 'clip = core.neo_fft3d.FFT3D(clip, sigma=' + sigma + ', bt=' + rad + ', ncpu=8)\n'
     if the_way.get('-neovd', null) != null:
+        # I liked this one most.
         rad = '6'
         percent = '85.0'
         if the_way.get('-rad', null) != null:
             rad = the_way['-rad']
         if the_way.get('-percent', null) != null:
             percent = the_way['-percent']
-        denoiser = ('clip = core.neo_vd.VagueDenoiser(clip, threshold=' + sigma + ', nsteps=' + rad + ', percent=' +
+        denoiser = denoiser + ('clip = core.neo_vd.VagueDenoiser(clip, threshold=' + sigma + ', nsteps=' + rad + ', percent=' +
                     percent + ')\n')
     if the_way.get('-dfttest', null) != null:
         # There are soooo many more parameters I could add.
+        # This one is like neovd
         sigma = '8.0'
+        if the_way.get('-noisesigma', null) != null:
+            sigma = the_way['-noisesigma']
         rad = '0'
-        if the_way.get('-rad', null) != null:
-            rad = the_way['-rad']
-        denoiser = 'clip = core.neo_dfttest.DFTTest(clip, ftype=' + rad + ', sigma=' + sigma + ')\n'
+        if the_way.get('-dfttestType', null) != null:
+            rad = the_way['-dfttestType']
+        denoiser = denoiser + 'clip = core.neo_dfttest.DFTTest(clip, ftype=' + rad + ', sigma=' + sigma + ')\n'
     the_script = 'import vapoursynth as vs\ncore = vs.core\nimport havsfunc\n' \
                  'clip = core.lsmas.LWLibavSource(source="' + get_drive_path(the_way['-path'], the_way, False).replace('\\', '/') + '/' + the_file + '.' \
                  + the_way['-ext'] + '", format="YUV420P8", stream_index=0, cache=0, prefer_hw=0)\n' \
