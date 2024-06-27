@@ -930,8 +930,8 @@ def generate_vpy(the_way, the_file):
         # There are soooo many more parameters I could add.
         # This one is like neovd
         sigma = '8.0'
-        if the_way.get('-noisesigma', null) != null:
-            sigma = the_way['-noisesigma']
+        if the_way.get('-denoiselevel', null) != null:
+            sigma = the_way['-denoiselevel']
         rad = '0'
         if the_way.get('-dfttestType', null) != null:
             rad = the_way['-dfttestType']
