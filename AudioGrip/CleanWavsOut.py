@@ -1,6 +1,5 @@
 import os
-import struct
-import sys
+import globals as g
 
 '''Yields all files in the folder rootdir'''
 def generateNextFile(rootdir):
@@ -16,16 +15,16 @@ def generateFile(genNext):
 
 if __name__ == '__main__':
     iNum = 0
-    for fFile in generateFile(generateNextFile('G:\\Clip\\CDN-48kHz')):
+    for fFile in generateFile(generateNextFile(g.FINALOUT)):
         os.remove(fFile)
         iNum = iNum + 1
-    for fFile in generateFile(generateNextFile('C:\\Users\\Peasant\\Desktop\\Process\\Batch')):
+    for fFile in generateFile(generateNextFile(g.DBOUTPATH)):
         os.remove(fFile)
         iNum = iNum + 1
-    for fFile in generateFile(generateNextFile('C:\\Users\\Peasant\\Desktop\\Process\\ReComp')):
+    for fFile in generateFile(generateNextFile(g.RECOMPPATH)):
         os.remove(fFile)
         iNum = iNum + 1
-    logPath = 'C:\\Users\\Peasant\\Desktop\\Process\\Controls\\Recomp.log'
-    if os.path.exists(logPath):
-        os.remove(logPath)
+    if os.path.exists(g.LOGPATH):
+        os.remove(g.LOGPATH)
+        iNum = iNum + 1
     print(iNum)

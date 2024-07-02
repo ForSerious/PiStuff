@@ -2,28 +2,13 @@ import os
 import sys
 import subprocess
 import traceback
+import globals as g
 from dMC import Converter
 from multiprocessing import Process, JoinableQueue
 from tinytag import TinyTag
 from time import time, strftime, localtime
 from datetime import timedelta
 
-DEBUG = False
-VERSION_NUMBER = '09'
-DBPOWER = '"C:\\Program Files\\dBpoweramp\\CoreConverter.exe"'
-DBOUTPATH = 'C:\\Users\\Peasant\\Desktop\\Process\\Batch\\'
-FINALOUT = 'G:\\Clip\\CDN-48kHz\\'
-STTOOL = '"G:\\stereo_tool_cmd.exe"'
-STSPATH = 'G:\\'
-RECOMPPATH = 'C:\\Users\\Peasant\\Desktop\\Process\\ReComp\\'
-DUMMYPATH = 'C:\\Users\\Peasant\\Desktop\\Starters'
-FOLDERLISTPATH = 'C:\\Users\\Peasant\\Desktop\\Process\\Controls\\ArtistList.txt'
-PREDIR = 'G:\\Vault\\The Music\\'
-LOGPATH = 'C:\\Users\\Peasant\\Desktop\\Process\\Controls\\Recomp.log'
-JAVAPATH = '"C:\\Program Files\\Java\\jre-1.8\\bin\\java.exe"'
-COMPJARPATH = '"C:\\Users\\Peasant\\Desktop\\Process\\comp.jar"'
-STEREOKEY = '<3f1ca7d95f71983602e58101812939c173f5b1992131d9e728ed858371c433b8>'
-NUMBEROFCORES = 12
 
 '''So, this should generate every file in the rootdir and return them one by one.'''
 def generate_next_file(rootdir):
@@ -71,8 +56,8 @@ def convert_to_32_wav(tags):
     if tags[10] is not None:
         sts = tags[10]
     try:
-        command = DBPOWER + ' -infile="' + tags[0] + \
-                  '" -outfile="' + DBOUTPATH + tags[1] + tags[2] + ' - ' + \
+        command = g.DBPOWER + ' -infile="' + tags[0] + \
+                  '" -outfile="' + g.DBOUTPATH + tags[1] + tags[2] + ' - ' + \
                   tags[4] + ' - ' + tags[5] + '.wav" -convert_to="Wave" -dspeffect1="Bit Depth=-depth={qt}32 float{qt}"' \
                   '-dspeffect2="Resample=-frequency={qt}48000{qt}" -dspeffect3="ID Tag' \
                   ' Processing=-delsingle0={qt}<>{qt} -delsingle1={qt}<DYNAMIC RANGE>{qt}' \
@@ -80,19 +65,19 @@ def convert_to_32_wav(tags):
                   ' DYNAMIC RANGE>{qt} -delsingle4={qt}ALBUM DYNAMIC RANGE{qt} -delsingle5' \
                   '={qt}DYNAMIC RANGE{qt} -delsingle6={qt}FOOBAR2000/ALBUM DYNAMIC RANGE{' \
                   'qt} -delsingle7={qt}FOOBAR2000/DYNAMIC RANGE{qt} -add0={qt}Comment=' \
-                  'Declipped: ' + sts + VERSION_NUMBER + '{qt} -case={qt}0{qt} -exportart={qt}(none){qt} -importart' \
+                  'Declipped: ' + sts + g.VERSION_NUMBER + '{qt} -case={qt}0{qt} -exportart={qt}(none){qt} -importart' \
                   '={qt}(none){qt} -maxart={qt}(any){qt} -maxartkb={qt}(any){qt}"'
-        if DEBUG:
+        if g.DEBUG:
             print('To wav 32 command')
             print(command)
         subprocess.call(command)
     except:
         return (False, traceback.format_exc())
     try:
-        command = (STTOOL + ' "' + DBOUTPATH + tags[1] + tags[2] + ' - ' + tags[4] + ' - ' + tags[5] + '.wav" "' +
-                   DBOUTPATH + tags[1] + tags[2] + ' - ' + tags[4] + ' - ' + tags[5] + '.wav" -s ' + STSPATH + sts +
-                   '.sts -1 -r 48000 -b 32f -k "' + STEREOKEY + '"')
-        if DEBUG:
+        command = (g.STTOOL + ' "' + g.DBOUTPATH + tags[1] + tags[2] + ' - ' + tags[4] + ' - ' + tags[5] + '.wav" "' +
+                   g.DBOUTPATH + tags[1] + tags[2] + ' - ' + tags[4] + ' - ' + tags[5] + '.wav" -s ' + g.STSPATH + sts +
+                   '.sts -1 -r 48000 -b 32f -k "' + g.STEREOKEY + '"')
+        if g.DEBUG:
             print('Stereo Tool command')
             print(command)
         subprocess.call(command)
@@ -101,12 +86,12 @@ def convert_to_32_wav(tags):
     if tags[1] == 'ZZ':
         return (False, 'Dummy file.')
     else:
-        return (True, DBOUTPATH + tags[1] + tags[2] + ' - ' + tags[4] + ' - ' + tags[5] + '.wav')
+        return (True, g.DBOUTPATH + tags[1] + tags[2] + ' - ' + tags[4] + ' - ' + tags[5] + '.wav')
 
 '''Create the command to convert to flac'''
 def convert_to_flac(tags):
     try:
-        command = DBPOWER + ' -infile="' + tags[0] + '" -outfile="' + FINALOUT + tags[1] + '\\' + tags[2] + ' - ' + tags[3] + '\\' + \
+        command = g.DBPOWER + ' -infile="' + tags[0] + '" -outfile="' + g.FINALOUT + tags[1] + '\\' + tags[2] + ' - ' + tags[3] + '\\' + \
                   tags[4] + ' - ' + tags[5] + '.flac" -convert_to="FLAC" -compression-level-8 -dspeffect1="Bit ' \
             'Depth=-depth={qt}32 float{qt}" -dspeffect2="Volume Normalize=-mode={qt}ebu{qt} -maxamp={qt}8{qt}'\
             ' -desiredb={qt}' + tags[6] + '{qt} -adapt_wnd={qt}6000{qt} -fixed={qt}0{qt}" -dspeffect3="Bit'\
@@ -118,7 +103,7 @@ def convert_to_flac(tags):
                 command = command + ' -dspeffect4="Trim=-lengthms={qt}' + tags[7] + '{qt}"'
             else:
                 command = command + ' -dspeffect5="Trim=-lengthms={qt}' + tags[7] + '{qt}"'
-        if DEBUG:
+        if g.DEBUG:
             print('Back to Flac command')
             print(command)
         subprocess.call(command)
@@ -127,25 +112,25 @@ def convert_to_flac(tags):
     return (True, tags[1] + ' - ' + tags[5])
 
 '''Create the command to run ReComp'''
-def reco_file(tags, converter):
+def reco_file(tags):
     if tags[9] is None:
         try:
-            command = DBPOWER + ' -infile="' + tags[0] + '" -outfile="' + RECOMPPATH + tags[1] + tags[2] + ' - ' + tags[4] + ' - ' + tags[5]\
+            command = g.DBPOWER + ' -infile="' + tags[0] + '" -outfile="' + g.RECOMPPATH + tags[1] + tags[2] + ' - ' + tags[4] + ' - ' + tags[5]\
                       + '.wav" -convert_to="Wave" -dspeffect1="Bit Depth=-depth={qt}16{qt} -dither={qt}tpdf{qt}"'
-            if DEBUG:
+            if g.DEBUG:
                 print('To wav 16 in recomp command')
                 print(command)
             subprocess.call(command)
         except:
             return (False, traceback.format_exc())
         try:
-            command = JAVAPATH + ' -jar ' + COMPJARPATH + ' "' + RECOMPPATH + tags[1] + tags[2] + ' - ' + tags[4] +\
-                      ' - ' + tags[5] + '.wav" "' + RECOMPPATH + tags[1] + tags[2] + ' - '\
-                      + tags[4] + ' - ' + tags[5] + '.wav" "' + LOGPATH + '" 8'
+            command = g.JAVAPATH + ' -jar ' + g.COMPJARPATH + ' "' + g.RECOMPPATH + tags[1] + tags[2] + ' - ' + tags[4] +\
+                      ' - ' + tags[5] + '.wav" "' + g.RECOMPPATH + tags[1] + tags[2] + ' - '\
+                      + tags[4] + ' - ' + tags[5] + '.wav" "' + g.LOGPATH + '" 8'
             subprocess.call(command)
         except:
             return (False, traceback.format_exc())
-        tags[0] = RECOMPPATH + tags[1] + tags[2] + ' - ' + tags[4] + ' - ' +\
+        tags[0] = g.RECOMPPATH + tags[1] + tags[2] + ' - ' + tags[4] + ' - ' +\
                   tags[5] + '.wav'
         return convert_to_flac(tags)
     else:
@@ -153,7 +138,7 @@ def reco_file(tags, converter):
 
 ##Pull all the needed tags from the song to create the commands needed to convert.
 def convert_song(file_path):
-    if DEBUG:
+    if g.DEBUG:
         print(file_path)
     converter = Converter()
     element = ''
@@ -214,7 +199,7 @@ def convert_song(file_path):
             year = testval[1]
         if testval[0].lower() == 'sts':
             sts = testval[1]
-    if DEBUG:
+    if g.DEBUG:
         print("Reco: " + str(reco))
         print("Trim Back: " + str(trim))
         print("Trim Front: " + str(trim2))
@@ -252,11 +237,11 @@ def convert_song(file_path):
         tags[0] = output[1]
     else:
         return output[1]
-    if DEBUG:
+    if g.DEBUG:
         print('wav 32 done:')
         print(tags[0])
-    output = reco_file(tags, converter)
-    if DEBUG:
+    output = reco_file(tags)
+    if g.DEBUG:
         print('reco done: ' + tags[0])
         #print(tags[0])
     return output[1]
@@ -279,13 +264,13 @@ if __name__ == '__main__':
     if len(sys.argv) <= 1:
         start = time()
         print('Reading artists.')
-        artistfile = open(FOLDERLISTPATH, 'r', -1, 'utf-8')
+        artistfile = open(g.FOLDERLISTPATH, 'r', -1, 'utf-8')
         artistlist = artistfile.readlines()
         dirs = []
         for artist in artistlist:
-            if DEBUG:
+            if g.DEBUG:
                 print(artist.strip())
-            dirs.append(PREDIR + artist.strip())
+            dirs.append(g.PREDIR + artist.strip())
         qTheStack = []
         for currentPath in dirs:
             for wFile in generate_next_file(currentPath):
@@ -293,23 +278,23 @@ if __name__ == '__main__':
                 #print(convert_song(wFile))
                 qTheStack.append(wFile)
         qTheStack = sorted(qTheStack, key=lambda x: TinyTag.get(x, False).duration, reverse=True)
-        if DEBUG:
+        if g.DEBUG:
             for elem in qTheStack:
                 print(elem)
         de = 0        
-        for dummy in generate_next_file(DUMMYPATH):
+        for dummy in generate_next_file(g.DUMMYPATH):
             qTheStack.insert(de, dummy)
             de = de + 1
         qInput = JoinableQueue()
         for path in qTheStack:
             qInput.put(path)
-        print(str(len(qTheStack) - NUMBEROFCORES) + ' Songs loaded.')
+        print(str(len(qTheStack) - g.NUMBEROFCORES) + ' Songs loaded.')
         qOutput = JoinableQueue()
-        for i in range(NUMBEROFCORES):
+        for i in range(g.NUMBEROFCORES):
             worker = Process(target=runCity, args=(qInput, qOutput))
             worker.daemon = True
             worker.start()
-        itemcount = -(NUMBEROFCORES - 1)
+        itemcount = -(g.NUMBEROFCORES - 1)
         for blh in qTheStack:
             smite = str(itemcount)
             if len(smite) < 2:
@@ -319,7 +304,7 @@ if __name__ == '__main__':
         qInput.join()
         end = time()
         print('Total time: ' + secondsToStr(end - start))
-        if os.path.exists(LOGPATH):
-            os.startfile(LOGPATH)
+        if os.path.exists(g.LOGPATH):
+            os.startfile(g.LOGPATH)
     else:
         convert_song(os.path.join(sys.argv[1]))
