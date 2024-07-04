@@ -39,6 +39,9 @@ Set the globals.
 * STEREOKEY. Your Stereo Tool Key. No quotes. Include the open and close wakas.
 * NUMBEROFCORES. Don't include hyperthreaded cores. I have 12 cores, I could probably do 16… but 12 seems heavy enough on the CPU.
 
+About that dMC.py. I probably used pip to install makepy. Then I went in to the python scripts folder and ran the `python pywin32_postinstall.py -install` command in there.
+Then I think I did what's described in [this blog](https://blog.httpwatch.com/2019/03/22/how-to-use-python-with-a-com-library-like-httpwatch/) on step 3 on the dMCScripting.dll. 
+
 
 Stereo Tool uses sts files. By default, this script looks for one named H.sts. You'll have to learn the ways of Stereo Tool to generate your own sts files. If you need to override what sts files gets used you can add an sts entry to the id3 tag any song needing it with the dBpoweramp tag editor.
 In fact that is how to control the main things that happen to each music file that gets processed.
