@@ -10,16 +10,17 @@ from time import time, strftime, localtime
 from datetime import timedelta
 
 
-'''So, this should generate every file in the rootdir and return them one by one.'''
 def generate_next_file(rootdir):
+    """So, this should generate every file in the rootdir and return them one by one."""
     for path, dirlist, filelist in os.walk(rootdir):
         for fn in filelist:
             if '~' not in fn and (fn.endswith('.wav') or fn.endswith('.flac') or fn.endswith('.wma') or fn.endswith(
                     '.ogg') or fn.endswith('.mp3') or fn.endswith('.m4a') or fn.endswith('.opus')):
                 yield os.path.join(path, fn)
 
-'''Replace any characters that cannot be uses in the Windows file system.'''
+
 def clean_chars(ttag):
+    """Replace any characters that cannot be uses in the Windows file system."""
     if '?' in ttag:
         ttag = ttag.replace('?', '¿')
         #print(ttag)
@@ -41,8 +42,9 @@ def clean_chars(ttag):
         ttag = ttag.replace('<', '-')
     return ttag
 
-'''Remove any leading zeros. Clean out the xs'''
+
 def clean_zeros(number):
+    """Remove any leading zeros. Clean out the 'x's"""
     if number is not None:
         while number[0] == '0':
             number = number[1:]
@@ -50,8 +52,9 @@ def clean_zeros(number):
     else:
         return number
 
-'''Create the command to convert to 32 bit wav. Create the command to process with stereo tool.'''
+
 def convert_to_32_wav(tags):
+    """Create the command to convert to 32 bit wav. Create the command to process with stereo tool."""
     sts = 'H'
     if tags[10] is not None:
         sts = tags[10]
@@ -88,8 +91,9 @@ def convert_to_32_wav(tags):
     else:
         return (True, g.DBOUTPATH + tags[1] + tags[2] + ' - ' + tags[4] + ' - ' + tags[5] + '.wav')
 
-'''Create the command to convert to flac'''
+
 def convert_to_flac(tags):
+    """Create the command to convert to flac"""
     try:
         command = g.DBPOWER + ' -infile="' + tags[0] + '" -outfile="' + g.FINALOUT + tags[1] + '\\' + tags[2] + ' - ' + tags[3] + '\\' + \
                   tags[4] + ' - ' + tags[5] + '.flac" -convert_to="FLAC" -compression-level-8 -dspeffect1="Bit ' \
@@ -111,8 +115,9 @@ def convert_to_flac(tags):
         return (False, traceback.format_exc())
     return (True, tags[1] + ' - ' + tags[5])
 
-'''Create the command to run ReComp'''
+
 def reco_file(tags):
+    """Create the command to run ReComp"""
     if tags[9] is None:
         try:
             command = g.DBPOWER + ' -infile="' + tags[0] + '" -outfile="' + g.RECOMPPATH + tags[1] + tags[2] + ' - ' + tags[4] + ' - ' + tags[5]\
@@ -136,8 +141,10 @@ def reco_file(tags):
     else:
         return convert_to_flac(tags)
 
-##Pull all the needed tags from the song to create the commands needed to convert.
+
 def convert_song(file_path):
+    """Pull all the needed tags from the song to create the commands needed to convert."""
+    startConvert = time()
     if g.DEBUG:
         print(file_path)
     converter = Converter()
@@ -244,9 +251,11 @@ def convert_song(file_path):
     if g.DEBUG:
         print('reco done: ' + tags[0])
         #print(tags[0])
-    return output[1]
+    endConvert = time()
+    return 'Took: ' + seconds_to_str(endConvert - startConvert) + ' ' + output[1]
 
-def runCity(q, out):
+
+def run_city(q, out):
     while True:
         if q.empty():
             break
@@ -254,11 +263,13 @@ def runCity(q, out):
         q.task_done()
     return out
 
-def secondsToStr(elapsed=None):
+
+def seconds_to_str(elapsed=None):
     if elapsed is None:
         return strftime("%Y-%m-%d %H:%M:%S", localtime())
     else:
-        return str(timedelta(seconds=elapsed))
+        return str(timedelta(seconds=elapsed))[:-6]
+
 
 if __name__ == '__main__':
     if len(sys.argv) <= 1:
@@ -288,10 +299,11 @@ if __name__ == '__main__':
         qInput = JoinableQueue()
         for path in qTheStack:
             qInput.put(path)
-        print(str(len(qTheStack) - g.NUMBEROFCORES) + ' Songs loaded.')
+        totalNumberOfSongs = str(len(qTheStack) - g.NUMBEROFCORES)
+        print(totalNumberOfSongs + ' Songs loaded.')
         qOutput = JoinableQueue()
         for i in range(g.NUMBEROFCORES):
-            worker = Process(target=runCity, args=(qInput, qOutput))
+            worker = Process(target=run_city, args=(qInput, qOutput))
             worker.daemon = True
             worker.start()
         itemcount = -(g.NUMBEROFCORES - 1)
@@ -299,11 +311,11 @@ if __name__ == '__main__':
             smite = str(itemcount)
             if len(smite) < 2:
                 smite = '0' + smite
-            print(smite + ': ' + qOutput.get(True, 3200))
+            print(smite + '/' + totalNumberOfSongs + ': ' + qOutput.get(True, 3200))
             itemcount = itemcount + 1
         qInput.join()
         end = time()
-        print('Total time: ' + secondsToStr(end - start))
+        print('Total time: ' + seconds_to_str(end - start))
         if os.path.exists(g.LOGPATH):
             os.startfile(g.LOGPATH)
     else:
