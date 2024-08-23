@@ -6,7 +6,6 @@ import traceback
 import globals as g
 from dMC import Converter
 from multiprocessing import Process, JoinableQueue
-from tinytag import TinyTag
 from time import time, strftime, localtime
 from datetime import timedelta
 
@@ -29,7 +28,7 @@ def clean_chars(ttag):
         ttag = ttag.replace('"', "'")
     if ':' in ttag:
         ttag = ttag.replace(':', ';')
-    if '/' in ttag:
+    if '\\' in ttag:
         ttag = ttag.replace('\\', '-')
     if '/' in ttag:
         ttag = ttag.replace('/', '-')
@@ -136,8 +135,7 @@ def reco_file(tags):
             subprocess.call(command)
         except:
             return (False, traceback.format_exc())
-        tags[0] = g.RECOMPPATH + tags[1] + tags[2] + ' - ' + tags[4] + ' - ' +\
-                  tags[5] + '.wav'
+        tags[0] = g.RECOMPPATH + tags[1] + tags[2] + ' - ' + tags[4] + ' - ' + tags[5] + '.wav'
         return convert_to_flac(tags)
     else:
         return convert_to_flac(tags)
@@ -151,8 +149,8 @@ def convert_song(file_path):
     converter = Converter()
     element = ''
     tagval = ''
-    i = 1
-    artist = None
+    i_at = 1
+    artist_tag = None
     year = None
     album = None
     track = None
@@ -174,7 +172,7 @@ def convert_song(file_path):
     if testval[0].lower() == 'album':
         album = testval[1]
     if testval[0].lower() == 'artist':
-        artist = testval[1]
+        artist_tag = testval[1]
     if testval[0].lower() == 'title':
         title = testval[1]
     if testval[0].lower() == 'track':
@@ -184,8 +182,8 @@ def convert_song(file_path):
     if testval[0].lower() == 'sts':
         sts = testval[1]
     while testval[0].lower() != '':
-        testval = converter.ReadIDTag(file_path, i, element, tagval)
-        i = i + 1
+        testval = converter.ReadIDTag(file_path, i_at, element, tagval)
+        i_at = i_at + 1
         # print('testval ' + testval[0].lower() + ': ' + testval[1])
         if testval[0].lower() == 'reco':
             reco = testval[1]
@@ -198,7 +196,7 @@ def convert_song(file_path):
         if testval[0].lower() == 'album':
             album = testval[1]
         if testval[0].lower() == 'artist':
-            artist = testval[1]
+            artist_tag = testval[1]
         if testval[0].lower() == 'title':
             title = testval[1]
         if testval[0].lower() == 'track':
@@ -213,21 +211,9 @@ def convert_song(file_path):
         print("Trim Front: " + str(trim2))
         print("Gain: " + str(rawgain))
         print("sts: " + str(sts))
-    try:
-        album = clean_chars(album)
-    except:
-        song = TinyTag.get(file_path)
-        album = clean_chars(song.album)
-    try:    
-        title = clean_chars(title)
-    except:
-        song = TinyTag.get(file_path)
-        title = clean_chars(song.title)
-    try:
-        artist = clean_chars(artist)
-    except:
-        song = TinyTag.get(file_path)
-        artist = clean_chars(song.artist)
+    album = clean_chars(album)
+    title = clean_chars(title)
+    artist_tag = clean_chars(artist_tag)
     gain = '0'
     if rawgain is not None:
         gain = rawgain.replace('x', '')
@@ -239,7 +225,7 @@ def convert_song(file_path):
         track_number = '0' + track_number
     if year is None:
         year = '0000'
-    tags = [file_path, artist, year, album, track_number, title, gain, clean_zeros(trim), clean_zeros(trim2), reco, sts]
+    tags = [file_path, artist_tag, year, album, track_number, title, gain, clean_zeros(trim), clean_zeros(trim2), reco, sts]
     output = convert_to_32_wav(tags)
     if output[0]:
         tags[0] = output[1]
@@ -280,7 +266,10 @@ def duration_compare(file_path):
     except:
         return '00:00:00.000'
     split_dar = re.split('\\n', duration.stdout)
-    # split_err = re.split('\\n', duration.stderr)
+    if g.DEBUG:
+        split_err = re.split('\\n', duration.stderr)
+        print('Error from VBS:')
+        print(split_err)
     return split_dar[3]
 
 
