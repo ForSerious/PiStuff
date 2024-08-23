@@ -1,7 +1,8 @@
-Set inputPath = Wscript.Arguments(0)
+Dim inputPath
+inputPath = Wscript.Arguments(0)
 Set dMC = CreateObject("dMCScripting.Converter")
 Dim AudioProps
-AudioProps = dMC.AudioProperties(Chr(34) + inputPath + Chr(34))
+AudioProps = dMC.AudioProperties(inputPath)
 AudioProps = Replace(AudioProps, chr(13), vbNewLine)
 AudioProps = Replace(AudioProps, "               ", "")
 AudioProps = Replace(AudioProps, chr(9), "")

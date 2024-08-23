@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 import subprocess
 import traceback
 import globals as g
@@ -271,13 +272,16 @@ def seconds_to_str(elapsed=None):
         return str(timedelta(seconds=elapsed))[:-7]
 
 
-def duration_compare(file_path, converter):
-    print(file_path)
+def duration_compare(file_path):
     file_path = '"' + file_path + '"'
-    print(converter)
-    duration = converter.AudioProperties(file_path)
-    print('duration')
-    print(duration)
+    try:
+        command = 'cscript.exe ' + g.READLENGTHPATH + ' ' + file_path
+        duration = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    except:
+        return '00:00:00.000'
+    split_dar = re.split('\\n', duration.stdout)
+    # split_err = re.split('\\n', duration.stderr)
+    return split_dar[3]
 
 
 if __name__ == '__main__':
@@ -292,42 +296,40 @@ if __name__ == '__main__':
                 print(artist.strip())
             dirs.append(g.PREDIR + artist.strip())
         qTheStack = []
-        con = Converter()
         for currentPath in dirs:
             for wFile in generate_next_file(currentPath):
                 #print(repr(wFile))
                 #print(convert_song(wFile))
                 qTheStack.append(wFile)
-                duration_compare(wFile, con)
-        qTheStack = sorted(qTheStack, key=lambda x: TinyTag.get(x, False).duration, reverse=True)
+        qTheStack = sorted(qTheStack, key=lambda x: duration_compare(x), reverse=True)
         if g.DEBUG:
             for elem in qTheStack:
                 print(elem)
-        # de = 0
-        # for dummy in generate_next_file(g.DUMMYPATH):
-        #     qTheStack.insert(de, dummy)
-        #     de = de + 1
-        # qInput = JoinableQueue()
-        # for path in qTheStack:
-        #     qInput.put(path)
-        # totalNumberOfSongs = str(len(qTheStack) - g.NUMBEROFCORES)
-        # print(totalNumberOfSongs + ' Songs loaded.')
-        # qOutput = JoinableQueue()
-        # for i in range(g.NUMBEROFCORES):
-        #     worker = Process(target=run_city, args=(qInput, qOutput))
-        #     worker.daemon = True
-        #     worker.start()
-        # itemcount = -(g.NUMBEROFCORES - 1)
-        # for blh in qTheStack:
-        #     smite = str(itemcount)
-        #     if len(smite) < 2:
-        #         smite = '0' + smite
-        #     print(smite + '/' + totalNumberOfSongs + ': ' + qOutput.get(True, 3200))
-        #     itemcount = itemcount + 1
-        # qInput.join()
-        # end = time()
-        # print('Total time: ' + seconds_to_str(end - start))
-        # if os.path.exists(g.LOGPATH):
-        #     os.startfile(g.LOGPATH)
+        de = 0
+        for dummy in generate_next_file(g.DUMMYPATH):
+            qTheStack.insert(de, dummy)
+            de = de + 1
+        qInput = JoinableQueue()
+        for path in qTheStack:
+            qInput.put(path)
+        totalNumberOfSongs = str(len(qTheStack) - g.NUMBEROFCORES)
+        print(totalNumberOfSongs + ' Songs loaded.')
+        qOutput = JoinableQueue()
+        for i in range(g.NUMBEROFCORES):
+            worker = Process(target=run_city, args=(qInput, qOutput))
+            worker.daemon = True
+            worker.start()
+        itemcount = -(g.NUMBEROFCORES - 1)
+        for blh in qTheStack:
+            smite = str(itemcount)
+            if len(smite) < 2:
+                smite = '0' + smite
+            print(smite + '/' + totalNumberOfSongs + ': ' + qOutput.get(True, 3200))
+            itemcount = itemcount + 1
+        qInput.join()
+        end = time()
+        print('Total time: ' + seconds_to_str(end - start))
+        if os.path.exists(g.LOGPATH):
+            os.startfile(g.LOGPATH)
     else:
         convert_song(os.path.join(sys.argv[1]))
