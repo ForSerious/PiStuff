@@ -259,19 +259,11 @@ def seconds_to_str(elapsed=None):
 
 
 def duration_compare(file_path):
-    file_path = '"' + file_path + '"'
-    try:
-        command = 'cscript.exe ' + g.READLENGTHPATH + ' ' + file_path
-        duration = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    except:
-        return '00:00:00.000'
-    split_dar = re.split('\\n', duration.stdout)
-    if g.DEBUG:
-        split_err = re.split('\\n', duration.stderr)
-        print('Error from VBS:')
-        print(split_err)
-    return split_dar[3]
-
+    if 'converter2' not in locals():
+        converter2 = Converter()
+    length = converter2.AudioProperties(file_path)
+    length = length[(length.find("Length") + 24):(length.find("Length") + 36)]
+    return length
 
 if __name__ == '__main__':
     if len(sys.argv) <= 1:
@@ -285,6 +277,7 @@ if __name__ == '__main__':
                 print(artist.strip())
             dirs.append(g.PREDIR + artist.strip())
         qTheStack = []
+        converter2 = Converter()
         for currentPath in dirs:
             for wFile in generate_next_file(currentPath):
                 #print(repr(wFile))

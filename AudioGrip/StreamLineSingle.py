@@ -2,7 +2,6 @@ import os
 import sys
 import globals as g
 import StreamLine as sl
-from tinytag import TinyTag
 
 
 if __name__ == '__main__':
@@ -22,7 +21,7 @@ if __name__ == '__main__':
                 print(repr(wFile))
                 #print(convert_song(wFile))
                 qTheStack.append(wFile)
-        qTheStack = sorted(qTheStack, key=lambda x: TinyTag.get(x, False).duration, reverse=True)
+        qTheStack = sorted(qTheStack, key=lambda x: sl.duration_compare(x), reverse=True)
         if g.DEBUG:
             for elem in qTheStack:
                 print(elem)

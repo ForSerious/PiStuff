@@ -12,6 +12,5 @@ PREDIR = 'G:\\Vault\\The Music\\'
 LOGPATH = 'path to Recomp.log'
 JAVAPATH = '"Full java path"'
 COMPJARPATH = '"full path to the included comp.jar"'
-READLENGTHPATH = '"full path to the included ReadLength.vbs"'
 STEREOKEY = '<Stereo Tool Key>'
 NUMBEROFCORES = 12
