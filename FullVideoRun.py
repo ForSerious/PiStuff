@@ -13,7 +13,7 @@ from clrprint import clrprint
 DEBUG = False
 BETA = False
 ALPHA = False
-REMOVETAGS = True
+REMOVETAGS = False
 CRF = '21'
 null = 'null'
 FFMPEG = '"C:\\Program Files (x86)\\SVP 4\\utils\\ffmpeg.exe"'
@@ -541,20 +541,20 @@ def final_pass(filepath, filename):
     if filepath.get('-name', null) != null:
         name = filepath['-name']
     out_path = (filepath['-path'], name + part)
-    color_specs = 'p=709:t=601:m=709:r=tv:c=left'
+    color_specs = 'p=709:t=601:m=709:r=tv:c=input'
     if filepath.get('-hd', null) != null or filepath.get('-bluray', null) != null:
-        color_specs = 'p=709:t=601:m=470bg:r=tv:c=left'
+        color_specs = 'p=709:t=601:m=470bg:r=tv:c=input'
+    if not REMOVETAGS:
+        color_specs = 'p=709:t=709:m=709:r=tv:c=input'
     try:
         command = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -framerate ' + (get_r(filepath)[4:]) + ' -y -i "' +
              os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + get_ext(filepath['-ext'])) +
-             '" -c:v libx265 -crf ' + CRF + ' -pix_fmt yuv420p -preset slow -x265-params aq-mode=3 -sws_flags spline'
-             '+accurate_rnd+full_chroma_int -vf "zscale=pin=bt709:min=gbr:tin=bt709:rin=pc:agamma=false:d=error_diffu'
-             'sion:' + color_specs + ',format=yuv420p" -color_range tv "' + os.path.join(get_drive_path(out_path[0],
-             filepath, False), out_path[1] + '.mkv') + '"')
+             '" -c:v libx265 -crf ' + CRF + ' -pix_fmt yuv420p -preset slow -vf "zscale=pin=bt709:min=gbr:tin=bt709:rin=pc:agamma=false:d=1:' + color_specs + ',format=yuv420p" "' +
+             os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + '.mkv') + '"')
         if filepath['-ext'] != 'tif':
             command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + \
                       os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -an -sn -map_chapters -1 -c:v libx265 -crf ' \
-                      + CRF + ' -preset slow -x265-params aq-mode=3 "' + os.path.join(out_path[0], out_path[1] + '.mkv') + '"'
+                      + CRF + ' -preset slower -x265-params "' + os.path.join(out_path[0], out_path[1] + '.mkv') + '"'
         if DEBUG:
             print('The Command: ')
             print(command)
