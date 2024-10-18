@@ -36,6 +36,8 @@ FOLDERS = 'C:\\PiStuff\\FullRunList.txt'
 OTHER_DRIVE = 'S:\\'
 LINEAR = True
 SORT = False
+TENBIT = False
+FULL = False
 
 
 def generate_next_file(rootdir):
@@ -126,7 +128,7 @@ def ff_pass(filepath):
                 decimate = decimate_tmp + ' '
             command = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + str(os.path.join(get_drive_path(
                 filepath['-path'], filepath, True), filepath['-file'] + '.' + filepath['-ext'])) + '" ' + ss + t +
-                '-r ' + filepath['-r'] + ' -map 0:v:0 -filter_complex setsar=1,bwdif=mode=1:parity=-1:deint=0' + decimate +
+                '-r ' + filepath['-r'] + ' -map 0:v:0 -filter_complex bwdif=mode=1:parity=-1:deint=0' + decimate +
                 '-c:v libx265 -crf 12 -preset veryfast "' + str(os.path.join(get_drive_path(out_path[0], filepath,
                 False), out_path[1] + '.mkv')) + '"')
         if filepath.get('-deinterlace', null) == null:
@@ -545,12 +547,21 @@ def final_pass(filepath, filename):
     if filepath.get('-hd', null) != null or filepath.get('-bluray', null) != null:
         color_specs = 'p=709:t=601:m=470bg:r=tv:c=input'
     if not REMOVETAGS:
-        color_specs = 'p=709:t=709:m=709:r=tv:c=input'
+        colorrange = 'tv'
+        if FULL:
+            colorrange = 'full'
+        color_specs = 'p=709:t=709:m=709:r=' + colorrange + ':c=input'
+    profile265 = 'main'
+    pixfmt = 'yuv420p'
+    if TENBIT:
+        profile265 = 'main422-10'
+        pixfmt = 'yuv422p10le'
     try:
         command = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -framerate ' + (get_r(filepath)[4:]) + ' -y -i "' +
              os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + get_ext(filepath['-ext'])) +
-             '" -c:v libx265 -crf ' + CRF + ' -pix_fmt yuv420p -preset slow -vf "zscale=pin=bt709:min=gbr:tin=bt709:rin=pc:agamma=false:d=1:' + color_specs + ',format=yuv420p" "' +
-             os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + '.mkv') + '"')
+             '" -c:v libx265 -crf ' + CRF + ' -pix_fmt ' + pixfmt + ' -preset slow -profile ' + profile265 +
+             ' -vf "zscale=pin=bt709:min=gbr:tin=bt709:rin=pc:d=3:' + color_specs + ',format=' + pixfmt +
+             '" "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + '.mkv') + '"')
         if filepath['-ext'] != 'tif':
             command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + \
                       os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -an -sn -map_chapters -1 -c:v libx265 -crf ' \
