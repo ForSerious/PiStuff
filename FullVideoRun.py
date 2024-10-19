@@ -565,7 +565,7 @@ def final_pass(filepath, filename):
         if filepath['-ext'] != 'tif':
             command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + \
                       os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -an -sn -map_chapters -1 -c:v libx265 -crf ' \
-                      + CRF + ' -preset slower -x265-params "' + os.path.join(out_path[0], out_path[1] + '.mkv') + '"'
+                      + CRF + ' -preset slower "' + os.path.join(out_path[0], out_path[1] + '.mkv') + '"'
         if DEBUG:
             print('The Command: ')
             print(command)
