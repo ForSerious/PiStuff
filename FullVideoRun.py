@@ -76,6 +76,7 @@ def ff_pass(filepath):
     part = ' ff'
     dering = ''
     decimate_tmp = ''
+    should_swap = False
     if filepath.get('-decimate', null) != null:
         decimate_tmp = filepath['-decimate']
     if filepath.get('-ss', null) != null or filepath.get('-ss2', null) != null:
@@ -113,9 +114,9 @@ def ff_pass(filepath):
         if filepath.get('-vpy', null) != null and filepath.get('-deinterlace', null) != null:
             decimate = '-r ' + filepath['-r'] + ' ' + decimate
             if filepath.get('-nnedi3', null) != null or filepath.get('-nnedi3cl', null) != null:
-                generate_nnedi3_vpy(filepath, filepath['-file'])
+                should_swap = generate_nnedi3_vpy(filepath, filepath['-file'])
             else:
-                generate_vpy(filepath, filepath['-file'])
+                should_swap = generate_vpy(filepath, filepath['-file'])
             command = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -f vapoursynth -i "' +
                 str(os.path.join(get_drive_path(filepath['-path'], filepath, True), filepath['-file'] + '.vpy')) +
                 '" -y ' + ss + t + '-map 0:v:0 ' + decimate + '-c:v libx265 -crf'
@@ -138,7 +139,7 @@ def ff_pass(filepath):
                 ' -preset veryfast -c:a copy -c:s copy -max_muxing_queue_size 4096 "' + str(os.path.join(get_drive_path(
                 out_path[0], filepath, False), out_path[1] + '.mkv') + '"'))
             if filepath.get('-vpy', null) != null or filepath.get('-dfttest', null) != null or filepath.get('-neovd', null) != null:
-                generate_vpy(filepath, out_path[1])
+                should_swap = generate_vpy(filepath, out_path[1])
                 run_three = True
                 command3 = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -f vapoursynth -i "' + str(os.path.join(
                     get_drive_path(filepath['-path'], filepath, True), out_path[1] + '.vpy')) + '" -y -map 0:v:0 '
@@ -169,7 +170,7 @@ def ff_pass(filepath):
         if get_json_state(filepath).get('ff1', null) == null:
             subprocess.call(command)
             save_json_state(filepath, 'ff1')
-            if filepath.get('-vpy', null) != null:
+            if should_swap:
                 filepath = swap_drive_path(filepath)
         if run_three and get_json_state(filepath).get('ff2', null) == null:
             if DEBUG:
@@ -948,7 +949,7 @@ def generate_vpy(the_way, the_file):
             rad = the_way['-dfttestType']
         denoiser = denoiser + 'clip = core.neo_dfttest.DFTTest(clip, ftype=' + rad + ', sigma=' + sigma + ')\n'
     the_script = 'import vapoursynth as vs\ncore = vs.core\nimport havsfunc\n' \
-                 'clip = core.lsmas.LWLibavSource(source="' + get_drive_path(the_way['-path'], the_way, False).replace('\\', '/') + '/' + the_file + '.' \
+                 'clip = core.lsmas.LWLibavSource(source="' + get_drive_path(the_way['-path'], the_way, True).replace('\\', '/') + '/' + the_file + '.' \
                  + the_way['-ext'] + '", format="YUV420P8", stream_index=0, cache=0, prefer_hw=0)\n' \
                  'clip = core.std.SetFrameProps(clip, _Matrix=5)\n' \
                  'clip = clip if not core.text.FrameProps(clip,"_Transfer") else core.std.SetFrameProps(clip, _Transfer=5)\n' \
@@ -960,6 +961,7 @@ def generate_vpy(the_way, the_file):
     f_out_put = open(os.path.join(the_way['-path'], the_file + '.vpy'), 'w')
     f_out_put.write(the_script)
     f_out_put.close()
+    return True
 
 
 def generate_nnedi3_vpy(the_way, the_file):
@@ -993,7 +995,7 @@ def generate_nnedi3_vpy(the_way, the_file):
             ifps = '30000'
             ofps = '60000'
     the_script = 'import vapoursynth as vs\ncore = vs.core\n' \
-                 'clip = core.lsmas.LWLibavSource(source="' + the_way['-path'].replace('\\', '/') + '/' + the_file + '.' \
+                 'clip = core.lsmas.LWLibavSource(source="' + get_drive_path(the_way['-path'], the_way, True).replace('\\', '/') + '/' + the_file + '.' \
                  + the_way['-ext'] + '", format="YUV420P8", stream_index=0, cache=0, prefer_hw=0)\n' \
                  'clip = core.std.SetFrameProps(clip, _Matrix=5)\n' \
                  'clip = clip if not core.text.FrameProps(clip,"_Transfer") else core.std.SetFrameProps(clip, _Transfer=5)\n' \
@@ -1005,6 +1007,7 @@ def generate_nnedi3_vpy(the_way, the_file):
     f_out_put = open(os.path.join(the_way['-path'], the_file + '.vpy'), 'w')
     f_out_put.write(the_script)
     f_out_put.close()
+    return True
 
 
 def make_merge_command(the_way, filename):
