@@ -102,7 +102,7 @@ def ff_pass(filepath):
                 part = ' pt1 ff'
     if filepath.get('-r', null) != null:
         r = '-r ' + filepath['-r'] + ' '
-    out_path = (get_drive_path(filepath['-path'], filepath, False), filepath['-file'] + part)
+    out_path = (get_drive_path(filepath['-path'], filepath, False), filepath['-name'] + part)
     filepath['-out'] = out_path[1]
     try:
         run_three = False
@@ -118,7 +118,7 @@ def ff_pass(filepath):
             else:
                 should_swap = generate_vpy(filepath, filepath['-file'])
             command = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -f vapoursynth -i "' +
-                str(os.path.join(get_drive_path(filepath['-path'], filepath, True), filepath['-file'] + '.vpy')) +
+                str(os.path.join(get_drive_path(filepath['-path'], filepath, True), filepath['-name'] + '.vpy')) +
                 '" -y ' + ss + t + '-map 0:v:0 ' + decimate + '-c:v libx265 -crf'
                 ' 12 -preset veryfast "' + str(os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] +
                 '.mkv')) + '"')
@@ -540,9 +540,7 @@ def final_pass(filepath, filename):
             part = ' pt2 AI'
         else:
             part = ' pt1 AI'
-    name = filepath['-file']
-    if filepath.get('-name', null) != null:
-        name = filepath['-name']
+    name = get_name(filepath)
     out_path = (filepath['-path'], name + part)
     color_specs = 'p=709:t=601:m=709:r=tv:c=input'
     if filepath.get('-hd', null) != null or filepath.get('-bluray', null) != null:
@@ -581,10 +579,6 @@ def final_pass(filepath, filename):
             if get_json_state(filepath).get('merge', null) == null:
                 subprocess.call(merge_command)
                 save_json_state(filepath, 'merge')
-            if filepath.get('-name', null) != null:
-                name = filepath['-name']
-            else:
-                name = filepath['-file']
             if filepath.get('-cleanmerge', null) != null:
                 if os.path.exists(os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] +
                 '.mkv')) and filepath['-originpath'] != os.path.join(get_drive_path(out_path[0], filepath, False),
@@ -619,12 +613,12 @@ def final_pass(filepath, filename):
         pt2 = ''
         if filepath['-pass2']:
             pt2 = 'pt2'
-        if os.path.exists(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '_run.json')):
+        if os.path.exists(os.path.join(filepath['-path'], filepath['-name'] + pt2 + '_run.json')):
             if not LINEAR:
-                os.remove(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '_run.json'))
+                os.remove(os.path.join(filepath['-path'], filepath['-name'] + pt2 + '_run.json'))
             else:
-                filepath['jsonRun'] = os.path.join(filepath['-path'], filepath['-file'] + pt2 + '_run.json')
-        remove_some_file(filepath, filepath['-file'] + pt2 + 'ff')
+                filepath['jsonRun'] = os.path.join(filepath['-path'], filepath['-name'] + pt2 + '_run.json')
+        remove_some_file(filepath, filepath['-name'] + pt2 + 'ff')
     return (True, out_path[1])
 
 
@@ -699,15 +693,23 @@ def convert_song(file_path):
     return output
 
 
-def populate_options(file_path):
+def pad_zero(itemcount):
+    smite = str(itemcount)
+    if len(smite) < 2:
+        return '-0' + smite
+    else:
+        return '-' + smite
+
+
+def populate_options(file_path, amounts):
     ext = file_path[1][-3:]
     newpath = file_path[1][:-4]
     if os.path.exists(os.path.join(file_path[0], newpath + '.json')):
-        clrprint('Populating:', newpath, clr='d,y')
+        clrprint('Populating from json:', newpath, clr='d,y')
         run_file = open(os.path.join(file_path[0], newpath + '.json'), 'r')
         the_way = json.load(run_file)
     elif os.path.exists(os.path.join(file_path[0], newpath + '.txt')):
-        clrprint('Populating:', newpath, clr='d,y')
+        clrprint('Populating from txt:', newpath, clr='d,y')
         optionsFile = open(os.path.join(file_path[0], newpath + '.txt'), 'r', -1, 'utf-8')
         optionslist = optionsFile.readlines()
         the_way = read_options(optionslist)
@@ -724,19 +726,51 @@ def populate_options(file_path):
     the_way['fromDrive'] = PREDIR
     the_way = get_dar(the_way, ext)
     the_way['-ext'] = ext
-    if the_way.get('-name', null) != null:
-        the_way['-name'] = the_way['-name'].replace('_', ' ')
-    else:
-        the_way['-name'] = the_way['-file'] + ' AI'
-    if the_way.get('-crf', null) != null:
-        global CRF
-        CRF = the_way['-crf']
     the_way['-originpath'] = os.path.join(file_path[0], file_path[1])
     the_way['-mkapath'] = os.path.join(file_path[0], file_path[1])
     if the_way.get('-r', null) == null:
         clrprint('You forgot -r!', clr='r')
         return None
-    return the_way
+    if the_way.get('-crf', null) != null:
+        global CRF
+        CRF = the_way.get('-crf', null)
+    if the_way.get('-cuts', null) != null:
+        cuts = the_way.get('-cuts', null)
+        counter = 1
+        for cut in cuts:
+            new_way = the_way.copy()
+            new_way['-out'] = newpath + pad_zero(counter)
+            new_way['-folders'] = deque()
+            new_way['-ss'] = cut.get('ss', null)
+            new_way['-t'] = cut.get('t', null)
+            new_way['-name'] = cut.get('name', null)
+            if new_way['-name'] == null:
+                new_way['-name'] = the_way.get('-file', null) + pad_zero(counter) + ' AI'
+            if SORT:
+                if new_way.get('-t', null) != null:
+                    new_way['-sort'] = get_sort_num(new_way['-t'])
+                else:
+                    new_way['-sort'] = get_sort_num(get_duration(new_way, new_way['-ext']))
+            amounts.append(new_way)
+            counter = counter + 1
+    else:
+        if the_way.get('-name', null) != null:
+            the_way['-name'] = the_way.get('-name', null).replace('_', ' ')
+        else:
+            the_way['-name'] = the_way.get('-file', null) + ' AI'
+        if the_way is not None:
+            if SORT:
+                if the_way.get('-t', null) != null:
+                    the_way['-sort'] = get_sort_num(the_way['-t'])
+                else:
+                    the_way['-sort'] = get_sort_num(get_duration(the_way, the_way['-ext']))
+            amounts.append(the_way)
+            if the_way.get('-pt2', null) != null:
+                CopyOption = the_way.copy()
+                CopyOption['-pass2'] = True
+                CopyOption['-sort'] = get_sort_num(CopyOption['-t2'])
+                amounts.append(CopyOption)
+    return True
 
 
 def run_ff(q, out, repo):
@@ -766,8 +800,8 @@ def run_amq(q, out, repo):
         if the_way.get('-clean', null) != null:
             if os.path.exists(os.path.join(the_way['-path'], the_way['-out'][:-3] + '.vpy')):
                 os.remove(os.path.join(the_way['-path'], the_way['-out'][:-3] + '.vpy'))
-            if os.path.exists(os.path.join(the_way['-path'], the_way['-file'] + '.vpy')):
-                os.remove(os.path.join(the_way['-path'], the_way['-file'] + '.vpy'))
+            if os.path.exists(os.path.join(the_way['-path'], the_way['-name'] + '.vpy')):
+                os.remove(os.path.join(the_way['-path'], the_way['-name'] + '.vpy'))
         repo.put((the_way.get('-took', '00:00:00'), the_way.get('-runtot', 0.0)))
         q.task_done()
     return out
@@ -958,7 +992,7 @@ def generate_vpy(the_way, the_file):
                  'clip = core.std.AssumeFPS(clip=clip, fpsnum=' + ifps + ', fpsden=' + fpsden + ')\n' \
                  + deinterlace + denoiser + \
                  'clip = core.std.AssumeFPS(clip=clip, fpsnum=' + ofps + ', fpsden=' + fpsden + ')\nclip.set_output()\n'
-    f_out_put = open(os.path.join(the_way['-path'], the_file + '.vpy'), 'w')
+    f_out_put = open(os.path.join(the_way['-path'], the_way['-name'] + '.vpy'), 'w')
     f_out_put.write(the_script)
     f_out_put.close()
     return True
@@ -1004,7 +1038,7 @@ def generate_nnedi3_vpy(the_way, the_file):
                  'clip = core.std.AssumeFPS(clip=clip, fpsnum=' + ifps + ', fpsden=' + fpsden + ')\n' \
                  + deinterlace + \
                  'clip = core.std.AssumeFPS(clip=clip, fpsnum=' + ofps + ', fpsden=' + fpsden + ')\nclip.set_output()\n'
-    f_out_put = open(os.path.join(the_way['-path'], the_file + '.vpy'), 'w')
+    f_out_put = open(os.path.join(the_way['-path'], the_way['-name'] + '.vpy'), 'w')
     f_out_put.write(the_script)
     f_out_put.close()
     return True
@@ -1084,8 +1118,8 @@ def get_json_state(filepath):
     if filepath['-pass2']:
         pt2 = 'pt2'
     state = {}
-    if os.path.exists(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '_run.json')):
-        state_file = open(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '_run.json'), 'r')
+    if os.path.exists(os.path.join(filepath['-path'], filepath['-name'] + pt2 + '_run.json')):
+        state_file = open(os.path.join(filepath['-path'], filepath['-name'] + pt2 + '_run.json'), 'r')
         state = json.load(state_file)
         state_file.close()
     return state
@@ -1096,10 +1130,10 @@ def save_json_state(filepath, what_pass):
     if filepath['-pass2']:
         pt2 = 'pt2'
     state = get_json_state(filepath)
-    if os.path.exists(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '_run.json')):
-        os.remove(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '_run.json'))
+    if os.path.exists(os.path.join(filepath['-path'], filepath['-name'] + pt2 + '_run.json')):
+        os.remove(os.path.join(filepath['-path'], filepath['-name'] + pt2 + '_run.json'))
     state[what_pass] = 'done'
-    outfile = open(os.path.join(filepath['-path'], filepath['-file'] + pt2 + '_run.json'), 'w')
+    outfile = open(os.path.join(filepath['-path'], filepath['-name'] + pt2 + '_run.json'), 'w')
     json.dump(state, outfile)
     outfile.close()
 
@@ -1183,8 +1217,8 @@ def run_linearly(lVideos, fStart):
         if oVideoSpec.get('-clean', null) != null:
             if os.path.exists(os.path.join(oVideoSpec['-path'], oVideoSpec['-out'][:-3] + '.vpy')):
                 os.remove(os.path.join(oVideoSpec['-path'], oVideoSpec['-out'][:-3] + '.vpy'))
-            if os.path.exists(os.path.join(oVideoSpec['-path'], oVideoSpec['-file'] + '.vpy')):
-                os.remove(os.path.join(oVideoSpec['-path'], oVideoSpec['-file'] + '.vpy'))
+            if os.path.exists(os.path.join(oVideoSpec['-path'], oVideoSpec['-name'] + '.vpy')):
+                os.remove(os.path.join(oVideoSpec['-path'], oVideoSpec['-name'] + '.vpy'))
         if oVideoSpec.get('-ahq', null) != null or oVideoSpec.get('-gaia', null) != null:
             clrprint('Starting enhancement pass.', clr='m')
             oVideoSpec = ahq_pass(oVideoSpec, oVideoSpec['-out'])
@@ -1230,120 +1264,109 @@ if __name__ == '__main__':
         for elem in qTheStack:
             print(elem)
     bstart = time()
-    OptionsStack = []
     AmountLoop = []
     for dude in qTheStack:
-        option = populate_options(dude)
-        if option is not None:
-            OptionsStack.append(option)
-            if SORT:
-                if option.get('-t', null) != null:
-                    option['-sort'] = get_sort_num(option['-t'])
-                else:
-                    option['-sort'] = get_sort_num(get_duration(option, option['-ext']))
-            AmountLoop.append(option)
-            if option.get('-pt2', null) != null:
-                CopyOption = option.copy()
-                CopyOption['-pass2'] = True
-                CopyOption['-sort'] = get_sort_num(CopyOption['-t2'])
-                AmountLoop.append(CopyOption)
-    if SORT and not LINEAR:
-        AmountLoop.sort(key=lambda item: (item['-sort']), reverse=True)
-    clrprint(str(len(AmountLoop)), 'Things loaded.' + '\n', clr='b,d')
-    if LINEAR:
-        run_linearly(AmountLoop, start)
+        option = populate_options(dude, AmountLoop)
+    if len(AmountLoop) == 0:
+        clrprint('Nothing loaded.' + '\n', clr='r')
     else:
-        ffinput = JoinableQueue()
-        fftimes = JoinableQueue()
-        for video in AmountLoop:
-            ffinput.put(video)
-        ff_out_put = JoinableQueue()
-        for i in range(FFNUM):
-            worker = Process(target=run_ff, args=(ffinput, ff_out_put, fftimes))
-            worker.daemon = True
-            worker.start()
-        for Bool in AmountLoop:
-            say = get_details_for_printing(fftimes.get()[0])
-            clrprint(say[0], say[1], say[2], clr='y,d,b')
-            fftimes.task_done()
-        ffinput.join()
-        amqinput = JoinableQueue()
-        amqtimes = JoinableQueue()
-        amqsort = []
-        while not ff_out_put.empty():
-            blh = ff_out_put.get()
-            amqsort.append(blh)
-            ff_out_put.task_done()
-        amqsort.sort(key=lambda item: (item['-sort']), reverse=True)
-        for thing in amqsort:
-            amqinput.put(thing)
-        amqoutput = JoinableQueue()
-        clrprint('\nStarting denoise pass.', clr='m')
-        for i in range(TVAINUM):
-            worker = Process(target=run_amq, args=(amqinput, amqoutput, amqtimes))
-            worker.daemon = True
-            worker.start()
-        for Bool in AmountLoop:
-            saywhat = amqtimes.get()
-            say = get_details_for_printing(saywhat[0])
-            clrprint(say[0], say[1], say[2], clr='y,d,b')
-            print('Running total: ' + seconds_to_str(saywhat[1]) + '\n')
-            amqtimes.task_done()
-        amqinput.join()
+        if SORT and not LINEAR:
+            AmountLoop.sort(key=lambda item: (item['-sort']), reverse=True)
+        clrprint(str(len(AmountLoop)), 'Things loaded.' + '\n', clr='b,d')
+        if LINEAR:
+            run_linearly(AmountLoop, start)
+        else:
+            ffinput = JoinableQueue()
+            fftimes = JoinableQueue()
+            for video in AmountLoop:
+                ffinput.put(video)
+            ff_out_put = JoinableQueue()
+            for i in range(FFNUM):
+                worker = Process(target=run_ff, args=(ffinput, ff_out_put, fftimes))
+                worker.daemon = True
+                worker.start()
+            for Bool in AmountLoop:
+                say = get_details_for_printing(fftimes.get()[0])
+                clrprint(say[0], say[1], say[2], clr='y,d,b')
+                fftimes.task_done()
+            ffinput.join()
+            amqinput = JoinableQueue()
+            amqtimes = JoinableQueue()
+            amqsort = []
+            while not ff_out_put.empty():
+                blh = ff_out_put.get()
+                amqsort.append(blh)
+                ff_out_put.task_done()
+            amqsort.sort(key=lambda item: (item['-sort']), reverse=True)
+            for thing in amqsort:
+                amqinput.put(thing)
+            amqoutput = JoinableQueue()
+            clrprint('\nStarting denoise pass.', clr='m')
+            for i in range(TVAINUM):
+                worker = Process(target=run_amq, args=(amqinput, amqoutput, amqtimes))
+                worker.daemon = True
+                worker.start()
+            for Bool in AmountLoop:
+                saywhat = amqtimes.get()
+                say = get_details_for_printing(saywhat[0])
+                clrprint(say[0], say[1], say[2], clr='y,d,b')
+                print('Running total: ' + seconds_to_str(saywhat[1]) + '\n')
+                amqtimes.task_done()
+            amqinput.join()
 
-        apoinput = JoinableQueue()
-        apotimes = JoinableQueue()
-        aposort = []
-        while not amqoutput.empty():
-            blh = amqoutput.get()
-            aposort.append(blh)
-            amqoutput.task_done()
-        aposort.sort(key=lambda item: (item['-sort']), reverse=True)
-        for thing in aposort:
-            apoinput.put(thing)
-        apooutput = JoinableQueue()
-        clrprint('Starting enhancement pass.', clr='m')
-        for i in range(TVAINUM):
-            worker = Process(target=run_prot, args=(apoinput, apooutput, apotimes))
-            worker.daemon = True
-            worker.start()
-        for Bool in AmountLoop:
-            saywhat = apotimes.get()
-            say = get_details_for_printing(saywhat[0])
-            clrprint(say[0], say[1], say[2], clr='y,d,b')
-            clrprint('Running total:', seconds_to_str(saywhat[1]) + '\n', clr='d,b')
-            apotimes.task_done()
-        apoinput.join()
+            apoinput = JoinableQueue()
+            apotimes = JoinableQueue()
+            aposort = []
+            while not amqoutput.empty():
+                blh = amqoutput.get()
+                aposort.append(blh)
+                amqoutput.task_done()
+            aposort.sort(key=lambda item: (item['-sort']), reverse=True)
+            for thing in aposort:
+                apoinput.put(thing)
+            apooutput = JoinableQueue()
+            clrprint('Starting enhancement pass.', clr='m')
+            for i in range(TVAINUM):
+                worker = Process(target=run_prot, args=(apoinput, apooutput, apotimes))
+                worker.daemon = True
+                worker.start()
+            for Bool in AmountLoop:
+                saywhat = apotimes.get()
+                say = get_details_for_printing(saywhat[0])
+                clrprint(say[0], say[1], say[2], clr='y,d,b')
+                clrprint('Running total:', seconds_to_str(saywhat[1]) + '\n', clr='d,b')
+                apotimes.task_done()
+            apoinput.join()
 
-        protsort = []
-        protinput = JoinableQueue()
-        prottimes = JoinableQueue()
-        while not apooutput.empty():
-            blh = apooutput.get()
-            protsort.append(blh)
-            apooutput.task_done()
-        protoutput = JoinableQueue()
-        protsort.sort(key=lambda item: (item['-sort']), reverse=True)
-        for thing2 in protsort:
-            protinput.put(thing2)
-        clrprint('Starting interpolation pass.', clr='m')
-        for i in range(APONUM):
-            worker = Process(target=run_apo, args=(protinput, protoutput, prottimes))
-            worker.daemon = True
-            worker.start()
-        for Bool in AmountLoop:
-            saywhat = prottimes.get()
-            say = get_details_for_printing(saywhat[0])
-            clrprint(say[0], say[1], say[2], clr='y,d,b')
-            clrprint('Running total:', seconds_to_str(saywhat[1]) + '\n', clr='d,b')
-            prottimes.task_done()
-        protinput.join()
-        clrprint('Starting final pass.', clr='m')
-        while not protoutput.empty():
-            blh = protoutput.get()
-            deets = convert_song(blh)
-            if not deets[0]:
-                clrprint(deets[1], clr='r')
-            protoutput.task_done()
-        end = time()
-        clrprint('Total time:', seconds_to_str(end - start), clr='g,b')
+            protsort = []
+            protinput = JoinableQueue()
+            prottimes = JoinableQueue()
+            while not apooutput.empty():
+                blh = apooutput.get()
+                protsort.append(blh)
+                apooutput.task_done()
+            protoutput = JoinableQueue()
+            protsort.sort(key=lambda item: (item['-sort']), reverse=True)
+            for thing2 in protsort:
+                protinput.put(thing2)
+            clrprint('Starting interpolation pass.', clr='m')
+            for i in range(APONUM):
+                worker = Process(target=run_apo, args=(protinput, protoutput, prottimes))
+                worker.daemon = True
+                worker.start()
+            for Bool in AmountLoop:
+                saywhat = prottimes.get()
+                say = get_details_for_printing(saywhat[0])
+                clrprint(say[0], say[1], say[2], clr='y,d,b')
+                clrprint('Running total:', seconds_to_str(saywhat[1]) + '\n', clr='d,b')
+                prottimes.task_done()
+            protinput.join()
+            clrprint('Starting final pass.', clr='m')
+            while not protoutput.empty():
+                blh = protoutput.get()
+                deets = convert_song(blh)
+                if not deets[0]:
+                    clrprint(deets[1], clr='r')
+                protoutput.task_done()
+            end = time()
+            clrprint('Total time:', seconds_to_str(end - start), clr='g,b')
