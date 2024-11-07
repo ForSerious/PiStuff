@@ -20,7 +20,7 @@ def generate_next_file(rootdir):
 
 
 def clean_chars(ttag):
-    """Replace any characters that cannot be uses in the Windows file system."""
+    """Replace any characters that cannot be used in the Windows file system."""
     if '?' in ttag:
         ttag = ttag.replace('?', '¿')
         #print(ttag)

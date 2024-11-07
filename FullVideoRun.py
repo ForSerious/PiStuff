@@ -256,6 +256,18 @@ def amq_pass(filepath, filename):
                   ':details=' + n_details + ':halo=' + n_halo + ':blur=' + n_blur + ':compression=' + n_comp +
                   ':blend=' + n_blend + n_auto + ':device=0:vram=1:instances=1 -c:v tiff -compression_algo deflate "' +
                   os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"')
+    elif filepath.get('-dione', null) != null:
+        am = 'ddv-3'
+        if filepath.get('-tv', null) != null:
+            am = 'dtv-3'
+        if filepath.get('-dehalo', null) != null:
+            am = 'dtvs-2'
+        command = (TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' +
+                   os.path.join(get_drive_path(filepath['-path'], filepath, True), filename +
+                                get_ext(filepath['-ext'])) + '" -r ' + filepath['-r'] + debuglog + ' -filter_complex ' + sar[1] +
+                   'tvai_up=model=' + am + ':scale=1.0:w=' + filepath['-w'] + ':h=' + filepath['-h'] + ':blend=' +
+                   blend + ':device=0:vram=1:instances=1 -c:v tiff -compression_algo deflate "' +
+                   os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"')
     else:
         am = 'amq-13'
         if filepath.get('-high', null) != null:
@@ -327,7 +339,7 @@ def apo_pass(filepath, filename):
         command = (TVAI + ' -hide_banner -stats_period 2.0 -nostdin'
                  + debuglog + frame + ' -y -i "' + os.path.join(get_drive_path(filepath['-path'], filepath, True),
                  filename + get_ext(filepath['-ext'])) + '" -filter_complex tvai_fi=model=' + model + ':slowmo=2.5:'
-                 'rdt=0.000001:device=0:vram=1:instances=0 -c:v tiff -compression_algo deflate "' +
+                 'rdt=-0.000001:device=0:vram=1:instances=0 -c:v tiff -compression_algo deflate "' +
                    os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"')
         if DEBUG:
             print('The Command: ')
@@ -393,6 +405,12 @@ def ahq_pass(filepath, filename):
     if filepath.get('-gaia', 'null') != null:
         scale = '0'
         model = 'ghq-5'
+    if filepath.get('-dione', null) != null:
+        model = 'ddv-3'
+        if filepath.get('-tv', null) != null:
+            model = 'dtv-3'
+        if filepath.get('-dehalo', null) != null:
+            model = 'dtvs-2'
     blend = '0'
     if filepath.get('-blend', 'null') != null:
         blend = filepath['-blend']
@@ -459,7 +477,7 @@ def prot_pass(filepath, filename):
     theModel = 'prob-3'
     if filepath.get('-iris', 'null') != null:
         theModel = 'iris-1'
-    if filepath.get('-protver', 'null') == '4':
+    elif filepath.get('-protver', 'null') == '4':
         theModel = 'prob-4'
     blend = '0.0'
     if filepath.get('-blend', 'null') != null:
@@ -793,7 +811,8 @@ def run_amq(q, out, repo):
         if q.empty():
             break
         the_way = q.get()
-        if the_way.get('-amq', null) != null or the_way.get('-nyx', null) != null or the_way.get('-theia', null) != null:
+        if (the_way.get('-amq', null) != null or the_way.get('-nyx', null) != null or the_way.get('-theia', null) !=
+                null or the_way.get('-dione', null) != null):
             out.put(amq_pass(the_way, the_way['-out']))
         else:
             out.put(the_way)
