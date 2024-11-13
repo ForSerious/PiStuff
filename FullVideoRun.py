@@ -167,7 +167,7 @@ def ff_pass(filepath):
         if get_json_state(filepath).get('mka', null) == null:
             subprocess.call(command2)
             save_json_state(filepath, 'mka')
-        if get_json_state(filepath).get('ff1', null) == null:
+        if get_json_state(filepath).get('ff1', null) == null and filepath.get('pure', null) == null:
             subprocess.call(command)
             save_json_state(filepath, 'ff1')
             if should_swap:
@@ -579,15 +579,15 @@ def final_pass(filepath, filename):
              '" -c:v libx265 -crf ' + CRF + ' -pix_fmt ' + pixfmt + ' -preset slow -profile ' + profile265 +
              ' -vf "zscale=pin=bt709:min=gbr:tin=bt709:rin=pc:d=3:' + color_specs + ',format=' + pixfmt +
              '" "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + '.mkv') + '"')
-        if filepath['-ext'] != 'tif':
+        if filepath['-ext'] != 'tif' or filepath.get('pure', null != null):
             finalss = ''
             finalt = ''
-            if filepath.get('-ss', null) is not null:
+            if filepath.get('-ss', null) != null:
                 finalss = ' -ss ' + filepath['-ss']
-            if filepath.get('-t', null) is not null:
+            if filepath.get('-t', null) != null:
                 finalt = ' -t ' + filepath['-t']
             command = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' +
-                      os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '"' + finalss + finalt +
+                      filepath['-originpath'] + '"' + finalss + finalt +
                        ' -an -sn -map_chapters -1 -c:v libx265 -crf '
                       + CRF + ' -preset slow "' + os.path.join(out_path[0], out_path[1] + '.mkv') + '"')
         if DEBUG:
