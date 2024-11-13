@@ -580,9 +580,16 @@ def final_pass(filepath, filename):
              ' -vf "zscale=pin=bt709:min=gbr:tin=bt709:rin=pc:d=3:' + color_specs + ',format=' + pixfmt +
              '" "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + '.mkv') + '"')
         if filepath['-ext'] != 'tif':
-            command = FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + \
-                      os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '" -an -sn -map_chapters -1 -c:v libx265 -crf ' \
-                      + CRF + ' -preset slower "' + os.path.join(out_path[0], out_path[1] + '.mkv') + '"'
+            finalss = ''
+            finalt = ''
+            if filepath.get('-ss', null) is not null:
+                finalss = ' -ss ' + filepath['-ss']
+            if filepath.get('-t', null) is not null:
+                finalt = ' -t ' + filepath['-t']
+            command = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' +
+                      os.path.join(filepath['-path'], filename + get_ext(filepath['-ext'])) + '"' + finalss + finalt +
+                       ' -an -sn -map_chapters -1 -c:v libx265 -crf '
+                      + CRF + ' -preset slow "' + os.path.join(out_path[0], out_path[1] + '.mkv') + '"')
         if DEBUG:
             print('The Command: ')
             print(command)
