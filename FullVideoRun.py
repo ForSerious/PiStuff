@@ -14,7 +14,7 @@ DEBUG = False
 BETA = False
 ALPHA = False
 REMOVETAGS = False
-CRF = '21'
+CRF = '20'
 null = 'null'
 FFMPEG = '"C:\\Program Files (x86)\\SVP 4\\utils\\ffmpeg.exe"'
 TVAI = '"G:\\Program Files\\Topaz Labs LLC\\Topaz Video AI\\ffmpeg.exe"'
@@ -576,7 +576,7 @@ def final_pass(filepath, filename):
     try:
         command = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -framerate ' + (get_r(filepath)[4:]) + ' -y -i "' +
              os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + get_ext(filepath['-ext'])) +
-             '" -c:v libx265 -crf ' + CRF + ' -pix_fmt ' + pixfmt + ' -preset slow -profile ' + profile265 +
+             '" -c:v libx265 -crf ' + CRF + ' -pix_fmt ' + pixfmt + ' -preset slower -profile ' + profile265 +
              ' -vf "zscale=pin=bt709:min=gbr:tin=bt709:rin=pc:d=3:' + color_specs + ',format=' + pixfmt +
              '" "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + '.mkv') + '"')
         if filepath['-ext'] != 'tif' or filepath.get('pure', null != null):
@@ -589,7 +589,7 @@ def final_pass(filepath, filename):
             command = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' +
                       filepath['-originpath'] + '"' + finalss + finalt +
                        ' -an -sn -map_chapters -1 -c:v libx265 -crf '
-                      + CRF + ' -preset slow "' + os.path.join(out_path[0], out_path[1] + '.mkv') + '"')
+                      + CRF + ' -preset slower "' + os.path.join(out_path[0], out_path[1] + '.mkv') + '"')
         if DEBUG:
             print('The Command: ')
             print(command)
