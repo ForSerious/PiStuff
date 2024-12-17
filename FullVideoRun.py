@@ -38,6 +38,7 @@ LINEAR = True
 SORT = False
 TENBIT = False
 FULL = False
+ALLOWTRIAL = False
 
 
 def generate_next_file(rootdir):
@@ -339,7 +340,7 @@ def apo_pass(filepath, filename):
         command = (TVAI + ' -hide_banner -stats_period 2.0 -nostdin'
                  + debuglog + frame + ' -y -i "' + os.path.join(get_drive_path(filepath['-path'], filepath, True),
                  filename + get_ext(filepath['-ext'])) + '" -filter_complex tvai_fi=model=' + model + ':slowmo=2.5:'
-                 'rdt=-0.000001:device=0:vram=1:instances=0 -c:v tiff -compression_algo deflate "' +
+                 'rdt=-0.000001:device=0:vram=1:instances=1 -c:v tiff -compression_algo deflate "' +
                    os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"')
         if DEBUG:
             print('The Command: ')
@@ -1174,16 +1175,26 @@ def make_beta_environment_variable(beta_env=None):
     return beta_env
 
 
-def make_debug_environment_variable(theFileName):
-    debug_env = os.environ.copy()
+def make_debug_environment_variable(theFileName, debug_env=None):
+    if debug_env is None:
+        debug_env = os.environ.copy()
     debug_env["FFREPORT"] = 'file=' + theFileName.replace('\\', '\\\\').replace(':', '\\:') + ':level=32'
     return debug_env
 
 
+def make_run_environment_variable():
+    normal_env = os.environ.copy()
+    if ALLOWTRIAL:
+        normal_env["TVAI_TRIAL_ALLOWED"] = '1'
+    else:
+        normal_env["TVAI_TRIAL_ALLOWED"] = '0'
+    return normal_env
+
+
 def env_run_command(theWay, command, output):
-    debugenv = None
+    normalenv = make_run_environment_variable()
     if DEBUG:
-        debugenv = make_debug_environment_variable(os.path.join(theWay['-path'], output + '.log'))
+        debugenv = make_debug_environment_variable(os.path.join(theWay['-path'], output + '.log'), normalenv)
     if BETA or ALPHA:
         beta_env = make_beta_environment_variable(debugenv)
         subprocess.call(command, env=beta_env)
@@ -1191,7 +1202,7 @@ def env_run_command(theWay, command, output):
         if DEBUG:
             subprocess.call(command, env=debugenv)
         else:
-            subprocess.call(command)
+            subprocess.call(command, env=normalenv)
 
 
 def get_drive_path(thepath, theway, isfrom):
