@@ -279,20 +279,16 @@ def amq_pass(filepath, filename):
                   'tvai_up=model=' + am + ':scale=1.0:w=' + filepath['-w'] + ':h=' + filepath['-h'] + ':blend=' +
                   blend + ':device=0:vram=1:instances=1 -c:v tiff -compression_algo deflate "' +
                   os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"')
-    try:
-        if DEBUG:
-            print('The Command: ')
-            print(command)
-        if get_json_state(filepath).get('amq', null) == null:
-            env_run_command(filepath, command, out_path[1])
-            save_json_state(filepath, 'amq')
-        filepath['-ext'] = 'tif'
-        if filepath.get('-clean', null) != null:
-            clean_images(filepath)
-            remove_some_file(filepath, filename)
-    except:
-        filepath['-took'] = traceback.format_exc()
-        return filepath
+    if DEBUG:
+        print('The Command: ')
+        print(command)
+    if get_json_state(filepath).get('amq', null) == null:
+        env_run_command(filepath, command, out_path[1])
+        save_json_state(filepath, 'amq')
+    filepath['-ext'] = 'tif'
+    if filepath.get('-clean', null) != null:
+        clean_images(filepath)
+        remove_some_file(filepath, filename)
     ff_end = time()
     the_name = filepath['-out']
     if filepath.get('-name', null) != null:
@@ -336,25 +332,21 @@ def apo_pass(filepath, filename):
     debuglog = ''
     if DEBUG:
         debuglog = ' -report'
-    try:
-        command = (TVAI + ' -hide_banner -stats_period 2.0 -nostdin'
-                 + debuglog + frame + ' -y -i "' + os.path.join(get_drive_path(filepath['-path'], filepath, True),
-                 filename + get_ext(filepath['-ext'])) + '" -filter_complex tvai_fi=model=' + model + ':slowmo=2.5:'
-                 'rdt=-0.000001:device=0:vram=1:instances=1 -c:v tiff -compression_algo deflate "' +
-                   os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"')
-        if DEBUG:
-            print('The Command: ')
-            print(command)
-        if get_json_state(filepath).get('apo', null) == null:
-            env_run_command(filepath, command, out_path[1])
-            save_json_state(filepath, 'apo')
-        filepath['-ext'] = 'tif'
-        if filepath.get('-clean', null) != null:
-            clean_images(filepath)
-            remove_some_file(filepath, filename)
-    except:
-        filepath['-took'] = traceback.format_exc()
-        return filepath
+    command = (TVAI + ' -hide_banner -stats_period 2.0 -nostdin'
+             + debuglog + frame + ' -y -i "' + os.path.join(get_drive_path(filepath['-path'], filepath, True),
+             filename + get_ext(filepath['-ext'])) + '" -filter_complex tvai_fi=model=' + model + ':slowmo=2.5:'
+             'rdt=-0.000001:device=0:vram=1:instances=1 -c:v tiff -compression_algo deflate "' +
+               os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"')
+    if DEBUG:
+        print('The Command: ')
+        print(command)
+    if get_json_state(filepath).get('apo', null) == null:
+        env_run_command(filepath, command, out_path[1])
+        save_json_state(filepath, 'apo')
+    filepath['-ext'] = 'tif'
+    if filepath.get('-clean', null) != null:
+        clean_images(filepath)
+        remove_some_file(filepath, filename)
     ff_end = time()
     the_name = filepath['-out']
     if filepath.get('-name', null) != null:
@@ -422,20 +414,16 @@ def ahq_pass(filepath, filename):
               'e=w=1920:h=1080:flags=lanczos:threads=0:force_original_aspect_ratio=decrease,pad=1920:1080:-1:-1:color'
               '=black -c:v tiff -compression_algo deflate "' + os.path.join(get_drive_path(out_path[0],
               filepath, False), out_path[1]) + '\\%6d.tif"')
-    try:
-        if DEBUG:
-            print('The Command: ')
-            print(command)
-        if get_json_state(filepath).get('ahq', null) == null:
-            env_run_command(filepath, command, out_path[1])
-            save_json_state(filepath, 'ahq')
-        filepath['-ext'] = 'tif'
-        if filepath.get('-clean', null) != null:
-            clean_images(filepath)
-            remove_some_file(filepath, filename)
-    except:
-        filepath['-took'] = traceback.format_exc()
-        return filepath
+    if DEBUG:
+        print('The Command: ')
+        print(command)
+    if get_json_state(filepath).get('ahq', null) == null:
+        env_run_command(filepath, command, out_path[1])
+        save_json_state(filepath, 'ahq')
+    filepath['-ext'] = 'tif'
+    if filepath.get('-clean', null) != null:
+        clean_images(filepath)
+        remove_some_file(filepath, filename)
     ff_end = time()
     the_name = filepath['-out']
     if filepath.get('-name', null) != null:
@@ -521,20 +509,16 @@ def prot_pass(filepath, filename):
                   prot_blur + ':compression=' + prot_compression + prot_r_t_a + ':blend=' + blend + ':device=0:vram=1:instances=1' + sarscale + ',scale='
                   'w=1920:h=1080:flags=lanczos:threads=0:force_original_aspect_ratio=decrease,pad=1920:1080:-1:-1:color'
                   '=black -c:v tiff -compression_algo deflate "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"')
-    try:
-        if DEBUG:
-            print('The Command: ')
-            print(command)
-        if get_json_state(filepath).get('prot', null) == null:
-            env_run_command(filepath, command, out_path[1])
-            save_json_state(filepath, 'prot')
-        filepath['-ext'] = 'tif'
-        if filepath.get('-clean', null) != null:
-            clean_images(filepath)
-            remove_some_file(filepath, filename)
-    except:
-        filepath['-took'] = traceback.format_exc()
-        return filepath
+    if DEBUG:
+        print('The Command: ')
+        print(command)
+    if get_json_state(filepath).get('prot', null) == null:
+        env_run_command(filepath, command, out_path[1])
+        save_json_state(filepath, 'prot')
+    filepath['-ext'] = 'tif'
+    if filepath.get('-clean', null) != null:
+        clean_images(filepath)
+        remove_some_file(filepath, filename)
     ff_end = time()
     the_name = filepath['-out']
     if filepath.get('-name', null) != null:
@@ -1197,12 +1181,14 @@ def env_run_command(theWay, command, output):
         debugenv = make_debug_environment_variable(os.path.join(theWay['-path'], output + '.log'), normalenv)
     if BETA or ALPHA:
         beta_env = make_beta_environment_variable(debugenv)
-        subprocess.call(command, env=beta_env)
+        result = subprocess.run(command, env=beta_env, stdout=subprocess.PIPE, text=True)
     else:
         if DEBUG:
-            subprocess.call(command, env=debugenv)
+            result = subprocess.run(command, env=debugenv, text=True)
         else:
-            subprocess.call(command, env=normalenv)
+            result = subprocess.run(command, env=normalenv, text=True)
+    if result.returncode != 0:
+        raise IOError('Trial mode (error code ' + str(result.returncode) + ')' )
 
 
 def get_drive_path(thepath, theway, isfrom):
