@@ -16,23 +16,23 @@ ALPHA = False
 REMOVETAGS = False
 CRF = '18'
 null = 'null'
-FFMPEG = '"C:\\Program Files (x86)\\SVP 4\\utils\\ffmpeg.exe"'
+FFMPEG = '"G:\\Program Files (x86)\\SVP 4\\utils\\ffmpeg.exe"'
 TVAI = '"G:\\Program Files\\Topaz Labs LLC\\Topaz Video AI\\ffmpeg.exe"'
 if BETA:
     TVAI = '"H:\\Program Files\\Topaz Labs LLC\\Topaz Video AI BETA\\ffmpeg.exe"'
 if ALPHA:
     TVAI = '"H:\\Program Files\\Topaz Labs LLC\\Topaz Video AI ALPHA\\ffmpeg.exe"'
-FFPROBE = '"C:\\Program Files (x86)\\SVP 4\\utils\\ffprobe.exe"'
-MKVMERGE = '"C:\\Program Files\\MKVToolNix\\mkvmerge.exe"'
-MKVEDIT = '"C:\\Program Files\\MKVToolNix\\mkvpropedit.exe"'
+FFPROBE = '"G:\\Program Files (x86)\\SVP 4\\utils\\ffprobe.exe"'
+MKVMERGE = '"G:\\Program Files\\MKVToolNix\\mkvmerge.exe"'
+MKVEDIT = '"G:\\Program Files\\MKVToolNix\\mkvpropedit.exe"'
 # Cut and frame rate correction processes
-FFNUM = 3
+FFNUM = 2
 # How many TVAI instances
-TVAINUM = 1
+TVAINUM = 2
 # How many TVAI APO instances
 APONUM = 1
-PREDIR = 'D:\\'
-FOLDERS = 'C:\\PiStuff\\FullRunList.txt'
+PREDIR = 'E:\\'
+FOLDERS = 'G:\\Code\\PiStuff\\FullRunList.txt'
 OTHER_DRIVE = 'S:\\'
 LINEAR = True
 SORT = False
@@ -548,21 +548,22 @@ def final_pass(filepath, filename):
     color_specs = 'p=709:t=601:m=709:r=tv:c=input'
     if filepath.get('-hd', null) != null or filepath.get('-bluray', null) != null:
         color_specs = 'p=709:t=601:m=470bg:r=tv:c=input'
-    if not REMOVETAGS:
+    if filepath.get('-ext', null) == 'tif':
         colorrange = 'tv'
         if FULL:
             colorrange = 'full'
         color_specs = 'p=709:t=709:m=709:r=' + colorrange + ':c=input'
     profile265 = 'main'
-    pixfmt = 'yuv420p'
+    pixfmt = 'yuv420p10le,format=yuv420p'
     if TENBIT:
-        profile265 = 'main422-10'
-        pixfmt = 'yuv422p10le'
+        profile265 = 'main10'
+        pixfmt = 'yuv420p10le'
+        # deband ,deband=c=true:b=false ,gradfun=0.8:20
     try:
         command = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -framerate ' + (get_r(filepath)[4:]) + ' -y -i "' +
              os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + get_ext(filepath['-ext'])) +
-             '" -c:v libx265 -crf ' + CRF + ' -pix_fmt ' + pixfmt + ' -preset slow -profile:v ' + profile265 +
-             ' -vf "zscale=pin=bt709:min=gbr:tin=bt709:rin=pc:d=3:' + color_specs + ',format=' + pixfmt +
+             '" -c:v libx265 -crf ' + CRF + ' -preset slow -profile:v ' + profile265 +
+             ' -vf "zscale=pin=bt709:min=gbr:tin=1:rin=pc:d=3:f=5:' + color_specs + ',format=yuv420p12le,format=' + pixfmt +
              '" "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + '.mkv') + '"')
         if filepath['-ext'] != 'tif' or filepath.get('pure', null != null):
             finalss = ''
@@ -1163,6 +1164,7 @@ def make_debug_environment_variable(theFileName, debug_env=None):
     if debug_env is None:
         debug_env = os.environ.copy()
     debug_env["FFREPORT"] = 'file=' + theFileName.replace('\\', '\\\\').replace(':', '\\:') + ':level=32'
+    debug_env["TVAI_ALWAYS_LOG"] = '1'
     return debug_env
 
 
@@ -1177,11 +1179,15 @@ def make_run_environment_variable():
 
 def env_run_command(theWay, command, output):
     normalenv = make_run_environment_variable()
+    debugenv = None
     if DEBUG:
         debugenv = make_debug_environment_variable(os.path.join(theWay['-path'], output + '.log'), normalenv)
     if BETA or ALPHA:
-        beta_env = make_beta_environment_variable(debugenv)
-        result = subprocess.run(command, env=beta_env, stdout=subprocess.PIPE, text=True)
+        if debugenv != None:
+            beta_env = make_beta_environment_variable(debugenv)
+        else:
+            beta_env = make_beta_environment_variable(normalenv)
+        result = subprocess.run(command, env=beta_env, text=True)
     else:
         if DEBUG:
             result = subprocess.run(command, env=debugenv, text=True)
