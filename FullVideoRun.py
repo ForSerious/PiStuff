@@ -16,23 +16,23 @@ ALPHA = False
 REMOVETAGS = False
 CRF = '18'
 null = 'null'
-FFMPEG = '"G:\\Program Files (x86)\\SVP 4\\utils\\ffmpeg.exe"'
+FFMPEG = '"C:\\Program Files (x86)\\SVP 4\\utils\\ffmpeg.exe"'
 TVAI = '"G:\\Program Files\\Topaz Labs LLC\\Topaz Video AI\\ffmpeg.exe"'
 if BETA:
     TVAI = '"H:\\Program Files\\Topaz Labs LLC\\Topaz Video AI BETA\\ffmpeg.exe"'
 if ALPHA:
     TVAI = '"H:\\Program Files\\Topaz Labs LLC\\Topaz Video AI ALPHA\\ffmpeg.exe"'
-FFPROBE = '"G:\\Program Files (x86)\\SVP 4\\utils\\ffprobe.exe"'
-MKVMERGE = '"G:\\Program Files\\MKVToolNix\\mkvmerge.exe"'
-MKVEDIT = '"G:\\Program Files\\MKVToolNix\\mkvpropedit.exe"'
+FFPROBE = '"C:\\Program Files (x86)\\SVP 4\\utils\\ffprobe.exe"'
+MKVMERGE = '"C:\\Program Files\\MKVToolNix\\mkvmerge.exe"'
+MKVEDIT = '"C:\\Program Files\\MKVToolNix\\mkvpropedit.exe"'
 # Cut and frame rate correction processes
-FFNUM = 2
+FFNUM = 3
 # How many TVAI instances
-TVAINUM = 2
+TVAINUM = 1
 # How many TVAI APO instances
 APONUM = 1
-PREDIR = 'E:\\'
-FOLDERS = 'G:\\Code\\PiStuff\\FullRunList.txt'
+PREDIR = 'D:\\'
+FOLDERS = 'C:\\PiStuff\\FullRunList.txt'
 OTHER_DRIVE = 'S:\\'
 LINEAR = True
 SORT = False
