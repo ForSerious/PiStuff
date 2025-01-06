@@ -558,12 +558,12 @@ def final_pass(filepath, filename):
     if TENBIT:
         profile265 = 'main10'
         pixfmt = 'yuv420p10le'
-        # deband ,deband=c=true:b=false ,gradfun=0.8:20
+        # deband ,deband=c=true:b=false ,gradfun=0.8:20 ,noise=alls=1:allf=t
     try:
         command = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -framerate ' + (get_r(filepath)[4:]) + ' -y -i "' +
              os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + get_ext(filepath['-ext'])) +
              '" -c:v libx265 -crf ' + CRF + ' -preset slow -profile:v ' + profile265 +
-             ' -vf "zscale=pin=bt709:min=gbr:tin=1:rin=pc:d=3:f=5:' + color_specs + ',format=yuv420p12le,format=' + pixfmt +
+             ' -vf "zscale=pin=bt709:min=gbr:tin=1:rin=pc:d=1:f=5:' + color_specs + ',format=yuv420p12le,format=' + pixfmt +
              '" "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + '.mkv') + '"')
         if filepath['-ext'] != 'tif' or filepath.get('pure', null != null):
             finalss = ''
