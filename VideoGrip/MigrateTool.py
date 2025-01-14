@@ -36,10 +36,14 @@ def read_options(optionslist):
 
 
 def populate_options(file_path):
-    if os.path.exists(os.path.join(file_path[0], file_path[1])):
-        optionsFile = open(os.path.join(file_path[0], file_path[1]), 'r', -1, 'utf-8')
-        optionslist = optionsFile.readlines()
-        the_way = read_options(optionslist)
+    inQuestion = os.path.join(file_path[0], file_path[1])
+    if os.path.exists(inQuestion):
+        optionsFile = open(inQuestion, 'r', -1, 'utf-8')
+        if inQuestion.endswith('txt'):
+            optionslist = optionsFile.readlines()
+            the_way = read_options(optionslist)
+        else:
+            the_way = json.load(optionsFile)
         if the_way.get('-name', null) != null:
             the_way['-name'] = the_way['-name'].replace('_', ' ')
         return the_way

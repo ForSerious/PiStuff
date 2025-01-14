@@ -140,12 +140,13 @@ def ff_pass(filepath):
                 ' -preset veryfast -c:a copy -c:s copy -max_muxing_queue_size 4096 "' + str(os.path.join(get_drive_path(
                 out_path[0], filepath, False), out_path[1] + '.mkv') + '"'))
             if filepath.get('-vpy', null) != null or filepath.get('-dfttest', null) != null or filepath.get('-neovd', null) != null:
-                should_swap = generate_vpy(filepath, out_path[1])
+                swap_drive_path(filepath)
+                generate_vpy(filepath, out_path[1])
                 run_three = True
                 command3 = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -f vapoursynth -i "' + str(os.path.join(
-                    get_drive_path(filepath['-path'], filepath, True), out_path[1] + '.vpy')) + '" -y -map 0:v:0 '
+                    get_drive_path(filepath['-path'], filepath, False), out_path[1] + '.vpy')) + '" -y -map 0:v:0 '
                     + r + decimate + '-c:v libx265 -crf 12 -preset veryfast "' + str(os.path.join(
-                    get_drive_path(out_path[0], filepath, False), out_path[1] + 'vpy' + '.mkv') + '"'))
+                    get_drive_path(out_path[0], filepath, True), out_path[1] + 'vpy' + '.mkv') + '"'))
                 out_path = (filepath['-path'], out_path[1] + 'vpy')
                 filepath['-out'] = out_path[1]
         if filepath.get('-name', null) != null:
@@ -1004,7 +1005,7 @@ def generate_vpy(the_way, the_file):
                  'clip = core.std.AssumeFPS(clip=clip, fpsnum=' + ifps + ', fpsden=' + fpsden + ')\n' \
                  + deinterlace + denoiser + \
                  'clip = core.std.AssumeFPS(clip=clip, fpsnum=' + ofps + ', fpsden=' + fpsden + ')\nclip.set_output()\n'
-    f_out_put = open(os.path.join(the_way['-path'], the_way['-name'] + '.vpy'), 'w')
+    f_out_put = open(os.path.join(the_way['-path'], the_file + '.vpy'), 'w')
     f_out_put.write(the_script)
     f_out_put.close()
     return True
