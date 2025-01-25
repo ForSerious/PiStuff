@@ -1059,6 +1059,8 @@ def generate_nnedi3_vpy(the_way, the_file):
 
 def make_merge_command(the_way, filename):
     the_command = MKVMERGE + ' ' + the_way['-mergecommand'].replace('~', ' ')
+    if the_way.get('title', null) != null:
+        the_command = the_command.replace('rxxTitle', the_way['title'])
     if os.path.exists(os.path.join(get_drive_path(the_way['-path'], the_way, True), filename + '.mkv')):
         the_command = the_command.replace('rxx1', os.path.join(get_drive_path(the_way['-path'], the_way, True), filename + '.mkv'))
         the_command = the_command.replace('rxxPt1', os.path.join(get_drive_path(the_way['-path'], the_way, True), filename + '.mkv'))
@@ -1081,6 +1083,10 @@ def make_merge_command(the_way, filename):
         the_command = the_command.replace('rxxOut', str(os.path.join(the_way['-path'], file_name + '.mkv')))
         the_command = the_command.replace('rxx4', file_name)
         the_command = the_command.replace('rxxTitle', file_name)
+    if the_way.get('title', null) != null:
+        the_command = the_command.replace('rxxTitle', the_way['title'])
+    if the_way.get('audio', null) != null:
+        the_command = the_command.replace('rxxAudio', the_way['audio'])
     return the_command
 
 
@@ -1100,6 +1106,8 @@ def make_append_command(the_way):
     else:
         the_command = the_command.replace('rxx2', os.path.join(get_drive_path(the_way['-path'], the_way, False), name + ' pt2 AI1.mkv'))
         the_command = the_command.replace('rxxPt2', os.path.join(get_drive_path(the_way['-path'], the_way, False), name + ' pt2 AI1.mkv'))
+    if the_way.get('title', null) != null:
+        the_command = the_command.replace('rxxTitle', the_way['title'])
     the_command = the_command.replace('rxx4', name)
     the_command = the_command.replace('rxxOut', os.path.join(the_way['-path'], name + '.mkv'))
     the_command = the_command.replace('rxxTitle', name)
