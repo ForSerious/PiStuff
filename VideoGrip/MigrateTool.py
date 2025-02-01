@@ -178,6 +178,8 @@ if __name__ == '__main__':
             else:
                 add = '\\new'
                 newname = paths[1][:-5]
+            if not os.path.exists(paths[0] + add):
+                os.mkdir(os.path.join(paths[0] + add))
             outfile = open(os.path.join(paths[0] + add, newname + '.json'), 'w')
             json.dump(temp_template, outfile, indent=2)
             outfile.close()
