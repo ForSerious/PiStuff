@@ -113,6 +113,10 @@ if __name__ == '__main__':
                 new_title = optionFile[0]['-name'][9:]
             else:
                 new_title = optionFile[0]['-name']
+            if optionFile[0].get('title', null) != null:
+                temp_template['title'] = optionFile[0].get('title', null)
+            elif temp_template.get('title', null) != null:
+                temp_template['title'] = new_title
             if the_overrides.get('ss', null) != null:
                 new_ss_value = optionFile[0].get('-ss', null)
                 new_ss2_value = optionFile[0].get('-ss2', null)
@@ -141,10 +145,14 @@ if __name__ == '__main__':
             if the_overrides.get('merge', null) != null:
                 new_merge_value = optionFile[0].get('-mergecommand', null)
                 new_append_value = optionFile[0].get('-appendcommand', null)
-                new_merge_value = new_merge_value.replace('rxxTitle', new_title)
-                new_append_value = new_append_value.replace('rxxTitle', new_title)
-                new_merge_value = new_merge_value.replace('rxx4', new_title)
-                new_append_value = new_append_value.replace('rxx4', new_title)
+                if optionFile[0].get('title', null) == null:
+                    new_merge_value = new_merge_value.replace('rxxTitle', new_title)
+                    new_append_value = new_append_value.replace('rxxTitle', new_title)
+                    new_merge_value = new_merge_value.replace('rxx4', new_title)
+                    new_append_value = new_append_value.replace('rxx4', new_title)
+                else:
+                    new_merge_value = new_merge_value.replace(new_title, 'rxxTitle')
+                    new_append_value = new_append_value.replace(new_title, 'rxxTitle')
                 if new_merge_value != null:
                     temp_template['-mergecommand'] = new_merge_value
                 else:
@@ -159,13 +167,13 @@ if __name__ == '__main__':
                 old_merge_value = optionFile[0].get('-mergecommand', null)
                 old_append_value = optionFile[0].get('-appendcommand', null)
                 if old_merge_value != null:
-                    if new_merge_value != null:
+                    if new_merge_value != null and optionFile[0].get('title', null) == null:
                         new_merge_value = new_merge_value.replace('rxxTitle', new_title)
                         temp_template['-mergecommand'] = new_merge_value
                 else:
                     temp_template.pop('-mergecommand', None)
                 if old_append_value != null:
-                    if new_append_value != null:
+                    if new_append_value != null and optionFile[0].get('title', null) == null:
                         new_append_value = new_append_value.replace('rxxTitle', new_title)
                         temp_template['-appendcommand'] = new_append_value
                 else:
