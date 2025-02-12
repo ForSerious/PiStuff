@@ -167,7 +167,7 @@ if __name__ == '__main__':
                 old_merge_value = optionFile[0].get('-mergecommand', null)
                 old_append_value = optionFile[0].get('-appendcommand', null)
                 if old_merge_value != null:
-                    if new_merge_value != null and optionFile[0].get('title', null) == null:
+                    if new_merge_value != null and temp_template.get('title', null) == null:
                         new_merge_value = new_merge_value.replace('rxxTitle', new_title)
                         temp_template['-mergecommand'] = new_merge_value
                 else:

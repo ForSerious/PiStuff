@@ -1005,7 +1005,7 @@ def generate_vpy(the_way, the_file):
                  'clip = core.std.AssumeFPS(clip=clip, fpsnum=' + ifps + ', fpsden=' + fpsden + ')\n' \
                  + deinterlace + denoiser + \
                  'clip = core.std.AssumeFPS(clip=clip, fpsnum=' + ofps + ', fpsden=' + fpsden + ')\nclip.set_output()\n'
-    f_out_put = open(os.path.join(the_way['-path'], the_file + '.vpy'), 'w')
+    f_out_put = open(os.path.join(the_way['-path'], the_way['-name'] + '.vpy'), 'w')
     f_out_put.write(the_script)
     f_out_put.close()
     return True
