@@ -131,13 +131,13 @@ def ff_pass(filepath):
             command = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + str(os.path.join(get_drive_path(
                 filepath['-path'], filepath, True), filepath['-file'] + '.' + filepath['-ext'])) + '" ' + ss + t +
                 '-r ' + filepath['-r'] + ' -map 0:v:0 -filter_complex bwdif=mode=1:parity=-1:deint=0' + decimate +
-                '-c:v libx265 -crf 12 -preset veryfast "' + str(os.path.join(get_drive_path(out_path[0], filepath,
+                '-c:v ffv1 -level 3 "' + str(os.path.join(get_drive_path(out_path[0], filepath,
                 False), out_path[1] + '.mkv')) + '"')
         if filepath.get('-deinterlace', null) == null:
             command = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -i "' + str(os.path.join(get_drive_path(
                 filepath['-path'], filepath, True), filepath['-file'] + '.' + filepath['-ext'])) + '" -y ' + ss +
-                t + '-map 0:v:0 ' + r + dering + '-c:v libx265 -crf 12'
-                ' -preset veryfast -c:a copy -c:s copy -max_muxing_queue_size 4096 "' + str(os.path.join(get_drive_path(
+                t + '-map 0:v:0 ' + r + dering + '-c:v ffv1 -level 3'
+                ' -c:a copy -c:s copy -max_muxing_queue_size 4096 "' + str(os.path.join(get_drive_path(
                 out_path[0], filepath, False), out_path[1] + '.mkv') + '"'))
             if filepath.get('-vpy', null) != null or filepath.get('-dfttest', null) != null or filepath.get('-neovd', null) != null:
                 swap_drive_path(filepath)
@@ -145,7 +145,7 @@ def ff_pass(filepath):
                 run_three = True
                 command3 = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -f vapoursynth -i "' + str(os.path.join(
                     get_drive_path(filepath['-path'], filepath, False), out_path[1] + '.vpy')) + '" -y -map 0:v:0 '
-                    + r + decimate + '-c:v libx265 -crf 12 -preset veryfast "' + str(os.path.join(
+                    + r + decimate + '-c:v ffv1 -level 3 "' + str(os.path.join(
                     get_drive_path(out_path[0], filepath, True), out_path[1] + 'vpy' + '.mkv') + '"'))
                 out_path = (filepath['-path'], out_path[1] + 'vpy')
                 filepath['-out'] = out_path[1]
