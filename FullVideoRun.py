@@ -130,9 +130,8 @@ def ff_pass(filepath):
                 decimate = decimate_tmp + ' '
             command = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + str(os.path.join(get_drive_path(
                 filepath['-path'], filepath, True), filepath['-file'] + '.' + filepath['-ext'])) + '" ' + ss + t +
-                '-r ' + filepath['-r'] + ' -map 0:v:0 -filter_complex bwdif=mode=1:parity=-1:deint=0' + decimate +
-                '-c:v ffv1 -level 3 "' + str(os.path.join(get_drive_path(out_path[0], filepath,
-                False), out_path[1] + '.mkv')) + '"')
+                '-r ' + filepath['-r'] + ' -map 0:v:0 -filter_complex [0:v]bwdif=mode=1:parity=-1:deint=0' + decimate +
+                '-c:v ffv1 -level 3 "' + str(os.path.join(out_path[0], out_path[1] + '.mkv')) + '"')
         if filepath.get('-deinterlace', null) == null:
             command = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -i "' + str(os.path.join(get_drive_path(
                 filepath['-path'], filepath, True), filepath['-file'] + '.' + filepath['-ext'])) + '" -y ' + ss +
