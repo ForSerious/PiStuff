@@ -86,7 +86,7 @@ def secondsToStr(elapsed=None):
     if elapsed is None:
         return strftime("%Y-%m-%d %H:%M:%S", localtime())
     else:
-        return str(timedelta(seconds=elapsed))
+        return str(timedelta(seconds=elapsed))[:-4]
 
 if __name__ == '__main__':
     if len(sys.argv) <= 1:
