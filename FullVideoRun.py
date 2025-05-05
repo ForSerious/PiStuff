@@ -938,7 +938,7 @@ def generate_vpy(the_way, the_file):
             bob = ''
             field = '2'
         deinterlace = 'clip = core.std.SetFrameProp(clip=clip, prop="_FieldBased", intval=' + field + ')\n' \
-        'clip = havsfunc.QTGMC(Input=clip, Preset="Placebo", TFF=' + TFF + ')\n'
+        'clip = havsfunc.QTGMC(Input=clip, Preset="Slow", TFF=' + TFF + ')\n'
         deinterlace = deinterlace + bob
     ifps = '30000'
     ofps = '30000'
@@ -961,7 +961,7 @@ def generate_vpy(the_way, the_file):
         sigma = the_way['-noisesigma']
     denoiser = ''
     if the_way.get('-ezdenoise', null) != null:
-        denoiser = 'clip = havsfunc.QTGMC(Input=clip, TFF=' + TFF + ', Preset="Placebo", NoiseProcess=1, ChromaNoise=True,' \
+        denoiser = 'clip = havsfunc.QTGMC(Input=clip, TFF=' + TFF + ', Preset="Slow", NoiseProcess=1, ChromaNoise=True,' \
                ' Denoiser="KNLMeansCL", DenoiseMC=True, NoiseTR=2, Sigma=' + sigma + ')\nclip = clip[::2]\n'
     if the_way.get('-minideen', null) != null:
         rad = '1,1,1'

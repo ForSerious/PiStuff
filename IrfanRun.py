@@ -7,12 +7,13 @@ from time import time, strftime, localtime
 from datetime import timedelta
 
 DEBUG = False
-PROCESSES = 10
-IRFAN_PATH = '"C:\\Users\\Acolyte\\Desktop\\Graphs\\IrfanView\\i_view64.exe" "'
-FOLDER = 'C:\\Users\\Acolyte\\IdeaProjects\\PiStuff\\VideoGrip\\FolderList.txt'
-predir = 'D:\\'
+PROCESSES = 12
+IRFAN_PATH = '"C:\\Users\\Peasant\\Desktop\\Benchmarks\\IrfanView\\i_view64.exe" "'
+FOLDER = 'G:\\Code\\PiStuff\\FolderList.txt'
+predir = 'E:\\'
 RESIZE = False
-CROP = True
+CROP = False
+BOTH = True
 
 '''So, this should generate every file in the rootdir and return them one by one.'''
 def generate_next_file(rootdir):
@@ -36,7 +37,19 @@ def reco_file(filepath):
 '''Create the command to run ReComp'''
 def crop_file(filepath):
     try:
-        command = IRFAN_PATH + filepath + '" /crop=(240,146,1436,792,0) /convert="' + filepath + '"'
+        command = IRFAN_PATH + filepath + '" /crop=(249,137,1424,801,0) /convert="' + filepath + '"'
+        if DEBUG:
+            print('The Command: ')
+            print(command)
+        subprocess.call(command)
+    except:
+        return (False, traceback.format_exc())
+    return (True, "done")
+
+'''Do both'''
+def both_file(filepath):
+    try:
+        command = IRFAN_PATH + filepath + '" /crop=(128,72,1664,936,0) /resize=(1920,1080) /resample /convert="' + filepath + '"'
         if DEBUG:
             print('The Command: ')
             print(command)
@@ -53,6 +66,8 @@ def convert_song(file_path):
         output = crop_file(file_path)
     if RESIZE:
         output = reco_file(file_path)
+    if BOTH:
+        output = both_file(file_path)
     if DEBUG:
         print('reco done: ' + output[1])
         #print(tags[0])
