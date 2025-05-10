@@ -120,9 +120,8 @@ def ff_pass(filepath):
                 should_swap = generate_vpy(filepath, filepath['-file'])
             command = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -f vapoursynth -i "' +
                 str(os.path.join(get_drive_path(filepath['-path'], filepath, True), filepath['-name'] + '.vpy')) +
-                '" -y ' + ss + t + '-map 0:v:0 ' + decimate + '-c:v libx265 -crf'
-                ' 12 -preset veryfast "' + str(os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] +
-                '.mkv')) + '"')
+                '" -y ' + ss + t + '-map 0:v:0 ' + decimate + '-c:v ffv1 -level 3 "' + str(os.path.join(get_drive_path(
+                        out_path[0], filepath, False), out_path[1] + '.mkv')) + '"')
         if filepath.get('-vpy', null) == null and filepath.get('-deinterlace', null) != null:
             if filepath.get('-bob', null) == null and filepath.get('-decimate', null) != null:
                 decimate = ',decimate=cycle=2' + decimate_tmp + ' '
@@ -649,6 +648,9 @@ def get_sar_things(filepath):
         squareratio = ''
     if dosquare:
         filepath['squareDone'] = True
+    if filepath.get('downscale', 'null') != null:
+        squareratio = 'scale=960:-1,'
+        scale = '2'
     return sarscale, squareratio, scale
 
 
