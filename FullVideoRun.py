@@ -567,10 +567,16 @@ def final_pass(filepath, filename):
         if filepath['-ext'] != 'tif' or filepath.get('pure', null != null):
             finalss = ''
             finalt = ''
-            if filepath.get('-ss', null) != null:
-                finalss = ' -ss ' + filepath['-ss']
-            if filepath.get('-t', null) != null:
-                finalt = ' -t ' + filepath['-t']
+            if filepath.get('-pass2', False):
+                if filepath.get('-ss2', null) != null:
+                    finalss = ' -ss ' + filepath['-ss2']
+                if filepath.get('-t2', null) != null:
+                    finalt = ' -t ' + filepath['-t2']
+            else:
+                if filepath.get('-ss', null) != null:
+                    finalss = ' -ss ' + filepath['-ss']
+                if filepath.get('-t', null) != null:
+                    finalt = ' -t ' + filepath['-t']
             command = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' +
                       filepath['-originpath'] + '"' + finalss + finalt +
                        ' -an -sn -map_chapters -1 -c:v libx265 -crf '
@@ -747,8 +753,8 @@ def populate_options(file_path, amounts):
     if the_way.get('-crf', null) != null:
         global CRF
         CRF = the_way.get('-crf', null)
-    if the_way.get('-cuts', null) != null:
-        cuts = the_way.get('-cuts', null)
+    if the_way.get('-cuts', null) != null or the_way.get('cuts', null) != null:
+        cuts = the_way.get('-cuts', the_way.get('cuts', null))
         counter = 1
         for cut in cuts:
             new_way = the_way.copy()
@@ -757,6 +763,8 @@ def populate_options(file_path, amounts):
             new_way['-ss'] = cut.get('ss', null)
             new_way['-t'] = cut.get('t', null)
             new_way['-name'] = cut.get('name', null)
+            new_way['title'] = cut.get('title', null)
+            new_way['-pt2'] = cut.get('pt2', null)
             if new_way['-name'] == null:
                 new_way['-name'] = the_way.get('-file', null) + pad_zero(counter) + ' AI'
             if SORT:
@@ -765,6 +773,15 @@ def populate_options(file_path, amounts):
                 else:
                     new_way['-sort'] = get_sort_num(get_duration(new_way, new_way['-ext']))
             amounts.append(new_way)
+            if cut.get('pt2', null) != null:
+                CopyOption = new_way.copy()
+                CopyOption['-ss2'] = cut.get('ss2', null)
+                CopyOption['-t2'] = cut.get('t2', null)
+                CopyOption['-name'] = cut.get('name', null)
+                CopyOption['title'] = cut.get('title', null)
+                CopyOption['-pass2'] = True
+                CopyOption['-sort'] = get_sort_num(CopyOption['-t2'])
+                amounts.append(CopyOption)
             counter = counter + 1
     else:
         if the_way.get('-name', null) != null:
