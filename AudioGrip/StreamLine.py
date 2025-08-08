@@ -1,6 +1,5 @@
 import os
 import sys
-import re
 import subprocess
 import traceback
 import globals as g
@@ -230,7 +229,7 @@ def convert_song(file_path):
     if output[0]:
         tags[0] = output[1]
     else:
-        return output[1]
+        return [output[1], None]
     if g.DEBUG:
         print('wav 32 done:')
         print(tags[0])
@@ -239,7 +238,8 @@ def convert_song(file_path):
         print('reco done: ' + tags[0])
         #print(tags[0])
     endConvert = time()
-    return 'Took: ' + seconds_to_str(endConvert - startConvert) + ' ' + output[1]
+    timeTaken = endConvert - startConvert
+    return ['Took: ' + seconds_to_str(timeTaken) + ' ' + output[1], timeTaken]
 
 
 def run_city(q, out):
@@ -302,11 +302,24 @@ if __name__ == '__main__':
             worker.daemon = True
             worker.start()
         itemcount = -(g.NUMBEROFCORES - 1)
+        times = []
         for blh in qTheStack:
             smite = str(itemcount)
             if len(smite) < 2:
                 smite = '0' + smite
-            print(smite + '/' + totalNumberOfSongs + ': ' + qOutput.get(True, 3200))
+            mess = qOutput.get(True, 3200)
+            if mess[1] is not None:
+                times.append(mess[1])
+                if len(times) > g.NUMBEROFCORES:
+                    times.sort()
+                    times.pop()
+                tots = 0
+                for amount in times:
+                    tots = tots + amount
+                average = tots / len(times)
+                print(smite + '/' + totalNumberOfSongs + '|avg: ' + seconds_to_str(average) +'| ' + (mess[0][:58]))
+            else:
+                print(smite + '/' + totalNumberOfSongs + ': ' + mess[0])
             itemcount = itemcount + 1
         qInput.join()
         end = time()
