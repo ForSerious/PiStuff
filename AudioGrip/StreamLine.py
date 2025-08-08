@@ -284,6 +284,14 @@ if __name__ == '__main__':
                 #print(convert_song(wFile))
                 qTheStack.append(wFile)
         qTheStack = sorted(qTheStack, key=lambda x: duration_compare(x), reverse=True)
+        reduce = 61
+        howMany = len(qTheStack)
+        if howMany > 9:
+            reduce = 60
+        if howMany > 99:
+            reduce = 58
+        if howMany > 999:
+            reduce = 56
         if g.DEBUG:
             for elem in qTheStack:
                 print(elem)
@@ -317,7 +325,7 @@ if __name__ == '__main__':
                 for amount in times:
                     tots = tots + amount
                 average = tots / len(times)
-                print(smite + '/' + totalNumberOfSongs + '|avg: ' + seconds_to_str(average) +'| ' + (mess[0][:58]))
+                print(smite + '/' + totalNumberOfSongs + '|avg: ' + seconds_to_str(average) +'| ' + (mess[0][:reduce]))
             else:
                 print(smite + '/' + totalNumberOfSongs + ': ' + mess[0])
             itemcount = itemcount + 1
