@@ -239,23 +239,31 @@ def amq_pass(filepath, filename):
             n_version = 'nxf-1'
         if n_version == '4':
             n_version = 'nyx-3'
-        n_comp = filepath.get('-nyxcomp', '0')
-        n_details = filepath.get('-nyxdetails', '0')
-        n_blur = filepath.get('-nyxblur', '0')
-        n_noise = filepath.get('-nyxnoise', '0.1')
-        n_halo = filepath.get('-nyxhalo', '0')
-        n_preblur = filepath.get('-nyxpreblur', '0')
-        n_blend = filepath.get('-nyxblend', '0')
-        n_auto = ''
-        if filepath.get('-nyxauto', null) != null:
-            n_auto = ':estimate=8'
-        command = (TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' +
-                  os.path.join(get_drive_path(filepath['-path'], filepath, True), filename +
-                  get_ext(filepath['-ext'])) + '" -r ' + filepath['-r'] + debuglog + ' -filter_complex ' + sar[1] +
-                  'tvai_up=model=' + n_version + ':scale=1:preblur=' + n_preblur + ':noise=' + n_noise +
-                  ':details=' + n_details + ':halo=' + n_halo + ':blur=' + n_blur + ':compression=' + n_comp +
-                  ':blend=' + n_blend + n_auto + ':device=0:vram=1:instances=1 -c:v tiff -compression_algo deflate "' +
-                  os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"')
+        if n_version == '5':
+            n_version = 'moo-1'
+            command = (TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' +
+                       os.path.join(get_drive_path(filepath['-path'], filepath, True), filename +
+                       get_ext(filepath['-ext'])) + '" -r ' + filepath['-r'] + debuglog + ' -filter_complex ' + sar[1] +
+                       'tvai_up=model=' + n_version + ':scale=1:device=0:vram=1:instances=1 -c:v tiff -compression_algo deflate "' +
+                       os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"')
+        else:
+            n_comp = filepath.get('-nyxcomp', '0')
+            n_details = filepath.get('-nyxdetails', '0')
+            n_blur = filepath.get('-nyxblur', '0')
+            n_noise = filepath.get('-nyxnoise', '0.1')
+            n_halo = filepath.get('-nyxhalo', '0')
+            n_preblur = filepath.get('-nyxpreblur', '0')
+            n_blend = filepath.get('-nyxblend', '0')
+            n_auto = ''
+            if filepath.get('-nyxauto', null) != null:
+                n_auto = ':estimate=8'
+            command = (TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' +
+                      os.path.join(get_drive_path(filepath['-path'], filepath, True), filename +
+                      get_ext(filepath['-ext'])) + '" -r ' + filepath['-r'] + debuglog + ' -filter_complex ' + sar[1] +
+                      'tvai_up=model=' + n_version + ':scale=1:preblur=' + n_preblur + ':noise=' + n_noise +
+                      ':details=' + n_details + ':halo=' + n_halo + ':blur=' + n_blur + ':compression=' + n_comp +
+                      ':blend=' + n_blend + n_auto + ':device=0:vram=1:instances=1 -c:v tiff -compression_algo deflate "' +
+                      os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"')
     elif filepath.get('-dione', null) != null:
         am = 'ddv-3'
         if filepath.get('-tv', null) != null:
@@ -392,6 +400,8 @@ def ahq_pass(filepath, filename):
     model = 'ahq-12'
     if filepath.get('-med', 'null') != null:
         model = 'amq-13'
+    if filepath.get('-low', 'null') != null:
+        model = 'alq-13'
     sar = get_sar_things(filepath)
     scale = sar[2]
     if filepath.get('-gaia', 'null') != null:
