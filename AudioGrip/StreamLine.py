@@ -3,6 +3,7 @@ import sys
 import subprocess
 import traceback
 import globals as g
+import clrprint
 from dMC import Converter
 from multiprocessing import Process, JoinableQueue
 from time import time, strftime, localtime
@@ -289,9 +290,9 @@ if __name__ == '__main__':
         if howMany > 9:
             reduce = 60
         if howMany > 99:
-            reduce = 58
+            reduce = 59
         if howMany > 999:
-            reduce = 56
+            reduce = 58
         if g.DEBUG:
             for elem in qTheStack:
                 print(elem)
@@ -311,11 +312,20 @@ if __name__ == '__main__':
             worker.start()
         itemcount = -(g.NUMBEROFCORES - 1)
         times = []
+        color = 'b'
+        cycle = 1
         for blh in qTheStack:
             smite = str(itemcount)
+            if itemcount == 100:
+                reduce = reduce - 1
+            if itemcount == 1000:
+                reduce = reduce - 1
             if len(smite) < 2:
                 smite = '0' + smite
-            mess = qOutput.get(True, 3200)
+            mess = qOutput.get(True, 33200)
+            if(cycle == g.NUMBEROFCORES):
+                color = 'g'
+                cycle = 0
             if mess[1] is not None:
                 times.append(mess[1])
                 if len(times) > g.NUMBEROFCORES:
@@ -324,10 +334,13 @@ if __name__ == '__main__':
                 for amount in times:
                     tots = tots + amount
                 average = tots / len(times)
-                print(smite + '/' + totalNumberOfSongs + '|avg: ' + seconds_to_str(average) +'| ' + (mess[0][:reduce]))
+                clrprint.clrprint(smite + '/' + totalNumberOfSongs + '|avg: ' + seconds_to_str(average) +'| ' + (mess[0][:reduce]), clr=color)
             else:
-                print(smite + '/' + totalNumberOfSongs + ': ' + mess[0])
+                clrprint.clrprint(smite + '/' + totalNumberOfSongs + ': ' + mess[0], clr=color)
             itemcount = itemcount + 1
+            cycle = cycle + 1
+            if color == 'g':
+                color = 'b'
         qInput.join()
         end = time()
         print('Total time: ' + seconds_to_str(end - start))
