@@ -319,8 +319,7 @@ if __name__ == '__main__':
             if mess[1] is not None:
                 times.append(mess[1])
                 if len(times) > g.NUMBEROFCORES:
-                    times.sort()
-                    times.pop()
+                    times.pop(0)
                 tots = 0
                 for amount in times:
                     tots = tots + amount
