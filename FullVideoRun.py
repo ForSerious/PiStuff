@@ -365,7 +365,7 @@ def apo_pass(filepath, filename):
     if get_json_state(filepath).get('apo1', null) == null and factor == '2.0':
         env_run_command(filepath, command, out_path[1])
         save_json_state(filepath, 'apo1')
-    if get_json_state(filepath).get('apo2', null) == null and factor == '2.5':
+    if get_json_state(filepath).get('apo2', null) == null and factor == '1.25':
         env_run_command(filepath, command, out_path[1])
         save_json_state(filepath, 'apo2')
     filepath['-ext'] = 'tif'
@@ -389,7 +389,7 @@ def get_r(filepath):
     if (filepath.get('-apo', null) != null or filepath.get('-apf', null) != null or filepath.get('-chr', null) != null
             or filepath.get('-chf', null) != null or filepath.get('-aion', null) != null):
         if filepath['-r'] == '23.976' or filepath['-r'] == '24':
-            val = (float(filepath['-r']) * 2.5 * 2)
+            val = (float(filepath['-r']) * 2.5)
         else:
             val = (float(filepath['-r']) * 2)
     else:
@@ -1328,11 +1328,11 @@ def run_linearly(lVideos, fStart):
                 or oVideoSpec.get('-chf', null) != null or oVideoSpec.get('-aion', null) != null):
             clrprint('Starting interpolation pass.', clr='m')
             oVideoSpec = apo_pass(oVideoSpec, oVideoSpec['-out'])
-            oVideoSpec['factor'] = '2.5'
+            oVideoSpec['factor'] = '1.25'
             oVideoSpec['-aion'] = null
             oVideoSpec['-apo'] = null
             oVideoSpec['-chr'] = 'true'
-            oVideoSpec['reduce'] = ' -r ' + str((float(oVideoSpec['-r']) * 2.5))
+            # oVideoSpec['reduce'] = ' -r ' + str((float(oVideoSpec['-r']) * 2.5))
             oVideoSpec = apo_pass(oVideoSpec, oVideoSpec['-out'])
             clrprint('Interpolation pass took:', get_details_for_printing(oVideoSpec.get('-took', '00:00:00'))[2], clr='d,b')
             clrprint('Running total:', seconds_to_str(oVideoSpec.get('-runtot', 0.0)) + '\n', clr='d,b')
