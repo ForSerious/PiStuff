@@ -1181,9 +1181,11 @@ def make_beta_environment_variable(beta_env=None):
     if beta_env is None:
         beta_env = os.environ.copy()
     if ALPHA:
-        beta_env["TVAI_MODEL_DIR"] = 'C:\\ProgramData\\Topaz Labs LLC\\Topaz Video AI ALPHA\\models'
+        #beta_env["TVAI_MODEL_DIR"] = 'C:\\ProgramData\\Topaz Labs LLC\\Topaz Video AI ALPHA\\models'
+        beta_env["TVAI_MODEL_DIR"] = 'H:\\ProgramData\\Topaz Labs LLC\\Topaz Video'
     else:
-        beta_env["TVAI_MODEL_DIR"] = 'C:\\ProgramData\\Topaz Labs LLC\\Topaz Video AI Beta\\models'
+        #beta_env["TVAI_MODEL_DIR"] = 'C:\\ProgramData\\Topaz Labs LLC\\Topaz Video AI Beta\\models'
+        beta_env["TVAI_MODEL_DIR"] = 'C:\\ProgramData\\Topaz Labs LLC\\Topaz Video\\models'
     return beta_env
 
 
