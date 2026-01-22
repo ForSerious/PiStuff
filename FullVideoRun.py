@@ -340,7 +340,7 @@ def apo_pass(filepath, filename):
     factor = '2.0'
     if filepath.get('factor', null) != null:
         factor = filepath['factor']
-    if filepath['-ext'] == 'tif':
+    if filepath['-ext'] == 'png':
         frame = ' -framerate ' + filepath['-r']
     model = 'apo-8'
     if filepath.get('-chr', null) != null:
@@ -495,8 +495,10 @@ def prot_pass(filepath, filename):
     theModel = 'prob-3'
     if filepath.get('-iris', 'null') != null:
         theModel = 'iris-1'
-    elif filepath.get('-protver', 'null') == '4':
+    if filepath.get('-protver', 'null') == '4':
         theModel = 'prob-4'
+    if filepath.get('-protver', 'null') == '5':
+        theModel = 'pnat-1'
     blend = '0.0'
     if filepath.get('-blend', 'null') != null:
         blend = filepath['-blend']
@@ -510,12 +512,12 @@ def prot_pass(filepath, filename):
                   '080:flags=lanczos:threads=0:force_original_aspect_ratio=decrease,pad=1920:1080:-1:-1:color'
                   '=black -c:v tiff -compression_algo deflate "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"')
     else:
-        prot_preblur = '-0.06'
+        prot_preblur = '0'
         prot_noise = '0'
-        prot_details = '0.09'
-        prot_halo = '0.06'
-        prot_blur = '0.10'
-        prot_compression = '0.5'
+        prot_details = '0.3'
+        prot_halo = '0'
+        prot_blur = '0'
+        prot_compression = '0.2'
         prot_r_t_a = ''
         if filepath.get('-protcompression', 'null') != null:
             prot_compression = filepath['-protcompression']
@@ -1222,7 +1224,9 @@ def make_beta_environment_variable(beta_env=None):
     if ALPHA:
         beta_env["TVAI_MODEL_DIR"] = 'C:\\ProgramData\\Topaz Labs LLC\\Topaz Video AI ALPHA\\models'
     else:
+        # beta_env["TVAI_MODEL_DIR"] = 'C:\\ProgramData\\Topaz Labs LLC\\Topaz Video\\models'
         beta_env["TVAI_MODEL_DIR"] = 'C:\\ProgramData\\Topaz Labs LLC\\Topaz Video AI Beta\\models'
+        beta_env["TVAI_MODEL_DIR"] = 'C:\\ProgramData\\Topaz Labs LLC\\Topaz Video Beta\\models'
     return beta_env
 
 
