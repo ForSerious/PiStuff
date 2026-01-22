@@ -1,9 +1,9 @@
 import os
 import sys
-import re
 import subprocess
 import traceback
 import globals as g
+import clrprint
 from dMC import Converter
 from multiprocessing import Process, JoinableQueue
 from time import time, strftime, localtime
@@ -230,7 +230,7 @@ def convert_song(file_path):
     if output[0]:
         tags[0] = output[1]
     else:
-        return output[1]
+        return [output[1], None]
     if g.DEBUG:
         print('wav 32 done:')
         print(tags[0])
@@ -239,7 +239,8 @@ def convert_song(file_path):
         print('reco done: ' + tags[0])
         #print(tags[0])
     endConvert = time()
-    return 'Took: ' + seconds_to_str(endConvert - startConvert) + ' ' + output[1]
+    timeTaken = endConvert - startConvert
+    return ['Took: ' + seconds_to_str(timeTaken) + ' ' + output[1], timeTaken]
 
 
 def run_city(q, out):
@@ -284,6 +285,14 @@ if __name__ == '__main__':
                 #print(convert_song(wFile))
                 qTheStack.append(wFile)
         qTheStack = sorted(qTheStack, key=lambda x: duration_compare(x), reverse=True)
+        reduce = 61
+        howMany = len(qTheStack)
+        if howMany > 9:
+            reduce = 60
+        if howMany > 99:
+            reduce = 59
+        if howMany > 999:
+            reduce = 58
         if g.DEBUG:
             for elem in qTheStack:
                 print(elem)
@@ -302,12 +311,36 @@ if __name__ == '__main__':
             worker.daemon = True
             worker.start()
         itemcount = -(g.NUMBEROFCORES - 1)
+        times = []
+        color = 'b'
+        cycle = 1
         for blh in qTheStack:
             smite = str(itemcount)
+            if itemcount == 100:
+                reduce = reduce - 1
+            if itemcount == 1000:
+                reduce = reduce - 1
             if len(smite) < 2:
                 smite = '0' + smite
-            print(smite + '/' + totalNumberOfSongs + ': ' + qOutput.get(True, 3200))
+            mess = qOutput.get(True, 33200)
+            if(cycle == g.NUMBEROFCORES):
+                color = 'g'
+                cycle = 0
+            if mess[1] is not None:
+                times.append(mess[1])
+                if len(times) > g.NUMBEROFCORES:
+                    times.pop(0)
+                tots = 0
+                for amount in times:
+                    tots = tots + amount
+                average = tots / len(times)
+                clrprint.clrprint(smite + '/' + totalNumberOfSongs + '|avg: ' + seconds_to_str(average) +'| ' + (mess[0][:reduce]), clr=color)
+            else:
+                clrprint.clrprint(smite + '/' + totalNumberOfSongs + ': ' + mess[0], clr=color)
             itemcount = itemcount + 1
+            cycle = cycle + 1
+            if color == 'g':
+                color = 'b'
         qInput.join()
         end = time()
         print('Total time: ' + seconds_to_str(end - start))
