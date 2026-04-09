@@ -407,6 +407,12 @@ def ahq_pass(filepath, filename):
     if filepath.get('-gaia', 'null') != null:
         scale = '0'
         model = 'ghq-5'
+        if filepath.get('-gaiaver', 'null') != null:
+            gaiav = filepath.get('-gaiaver', 'null')
+            if gaiav == 'cg':
+                model = 'gcg-5'
+            if gaiav == '2':
+                model = 'ganim-1'
     if filepath.get('-dione', null) != null:
         model = 'ddv-3'
         if filepath.get('-tv', null) != null:
@@ -1193,7 +1199,8 @@ def make_beta_environment_variable(beta_env=None):
     if ALPHA:
         beta_env["TVAI_MODEL_DIR"] = 'C:\\ProgramData\\Topaz Labs LLC\\Topaz Video AI ALPHA\\models'
     else:
-        beta_env["TVAI_MODEL_DIR"] = 'C:\\ProgramData\\Topaz Labs LLC\\Topaz Video AI Beta\\models'
+        # beta_env["TVAI_MODEL_DIR"] = 'C:\\ProgramData\\Topaz Labs LLC\\Topaz Video AI Beta\\models'
+        beta_env["TVAI_MODEL_DIR"] = 'C:\\ProgramData\\Topaz Labs LLC\\Topaz Video\\models'
     return beta_env
 
 
