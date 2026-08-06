@@ -127,9 +127,17 @@ def ff_pass(filepath):
                 decimate = ',decimate=cycle=2' + decimate_tmp + ' '
             else:
                 decimate = decimate_tmp + ' '
+            field_order = '-1'
+            if filepath.get('-tff', null) != null:
+                field_order = '0'
+            if filepath.get('-bff', null) != null:
+                field_order = '1'
+            deinterlace_line = 'yadif=mode=1:parity=' + field_order + ',mcdeint=mode=1:parity=' + field_order
+            if filepath.get('-bwdif', null) != null:
+                deinterlace_line = 'bwdif=mode=1:parity=' + field_order + ',mcdeint=mode=1:parity=' + field_order
             command = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' + str(os.path.join(get_drive_path(
                 filepath['-path'], filepath, True), filepath['-file'] + '.' + filepath['-ext'])) + '" ' + ss + t +
-                '-r ' + filepath['-r'] + ' -map 0:v:0 -filter_complex [0:v]bwdif=mode=1:parity=-1:deint=0' + decimate +
+                '-r ' + filepath['-r'] + ' -map 0:v:0 -filter_complex [0:v]' + deinterlace_line + decimate +
                 '-c:v ffv1 -level 3 "' + str(os.path.join(out_path[0], out_path[1] + '.mkv')) + '"')
         if filepath.get('-deinterlace', null) == null:
             command = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -i "' + str(os.path.join(get_drive_path(
@@ -264,12 +272,16 @@ def amq_pass(filepath, filename):
                       ':details=' + n_details + ':halo=' + n_halo + ':blur=' + n_blur + ':compression=' + n_comp +
                       ':blend=' + n_blend + n_auto + ':device=0:vram=1:instances=1 -c:v tiff -compression_algo deflate "' +
                       os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"')
-    elif filepath.get('-dione', null) != null:
+    elif filepath.get('-dione', null) != null or filepath.get('-nap', null) != null:
         am = 'ddv-3'
         if filepath.get('-tv', null) != null:
             am = 'dtv-3'
         if filepath.get('-dehalo', null) != null:
             am = 'dtvs-2'
+        if filepath.get('-ver4', null) != null:
+            am = 'dtd-4'
+        if filepath.get('-nap', null) != null:
+            am = 'nap-3'
         command = (TVAI + ' -hide_banner -stats_period 2.0 -nostdin -y -i "' +
                    os.path.join(get_drive_path(filepath['-path'], filepath, True), filename +
                                 get_ext(filepath['-ext'])) + '" -r ' + filepath['-r'] + debuglog + ' -filter_complex ' + sar[1] +
@@ -325,6 +337,9 @@ def apo_pass(filepath, filename):
             raise
         pass
     frame = ''
+    factor = '2.0'
+    if filepath.get('factor', null) != null:
+        factor = filepath['factor']
     if filepath['-ext'] == 'tif':
         frame = ' -framerate ' + filepath['-r']
     model = 'apo-8'
@@ -341,15 +356,18 @@ def apo_pass(filepath, filename):
         debuglog = ' -report'
     command = (TVAI + ' -hide_banner -stats_period 2.0 -nostdin'
              + debuglog + frame + ' -y -i "' + os.path.join(get_drive_path(filepath['-path'], filepath, True),
-             filename + get_ext(filepath['-ext'])) + '" -filter_complex tvai_fi=model=' + model + ':slowmo=2.5:'
-             'rdt=-0.000001:device=0:vram=1:instances=1 -c:v tiff -compression_algo deflate "' +
+             filename + get_ext(filepath['-ext'])) + '" -filter_complex tvai_fi=model=' + model + ':slowmo=' + factor +
+             ':rdt=-0.000001:device=0:vram=1:instances=1 -c:v tiff -compression_algo deflate "' +
                os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"')
     if DEBUG:
         print('The Command: ')
         print(command)
-    if get_json_state(filepath).get('apo', null) == null:
+    if get_json_state(filepath).get('apo1', null) == null and factor == '2.0':
         env_run_command(filepath, command, out_path[1])
-        save_json_state(filepath, 'apo')
+        save_json_state(filepath, 'apo1')
+    if get_json_state(filepath).get('apo2', null) == null and factor == '1.25':
+        env_run_command(filepath, command, out_path[1])
+        save_json_state(filepath, 'apo2')
     filepath['-ext'] = 'tif'
     if filepath.get('-clean', null) != null:
         clean_images(filepath)
@@ -407,12 +425,20 @@ def ahq_pass(filepath, filename):
     if filepath.get('-gaia', 'null') != null:
         scale = '0'
         model = 'ghq-5'
+        if filepath.get('-gaiaver', 'null') != null:
+            gaiav = filepath.get('-gaiaver', 'null')
+            if gaiav == 'cg':
+                model = 'gcg-5'
+            if gaiav == '2':
+                model = 'ganim-1'
     if filepath.get('-dione', null) != null:
         model = 'ddv-3'
         if filepath.get('-tv', null) != null:
             model = 'dtv-3'
         if filepath.get('-dehalo', null) != null:
             model = 'dtvs-2'
+        if filepath.get('-ver4', null) != null:
+            model = 'dtd-4'
     blend = '0'
     if filepath.get('-blend', 'null') != null:
         blend = filepath['-blend']
@@ -475,8 +501,10 @@ def prot_pass(filepath, filename):
     theModel = 'prob-3'
     if filepath.get('-iris', 'null') != null:
         theModel = 'iris-1'
-    elif filepath.get('-protver', 'null') == '4':
+    if filepath.get('-protver', 'null') == '4':
         theModel = 'prob-4'
+    if filepath.get('-protver', 'null') == '5':
+        theModel = 'pnat-1'
     blend = '0.0'
     if filepath.get('-blend', 'null') != null:
         blend = filepath['-blend']
@@ -490,12 +518,12 @@ def prot_pass(filepath, filename):
                   '080:flags=lanczos:threads=0:force_original_aspect_ratio=decrease,pad=1920:1080:-1:-1:color'
                   '=black -c:v tiff -compression_algo deflate "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1]) + '\\%6d.tif"')
     else:
-        prot_preblur = '-0.06'
+        prot_preblur = '0'
         prot_noise = '0'
-        prot_details = '0.09'
-        prot_halo = '0.06'
-        prot_blur = '0.10'
-        prot_compression = '0.5'
+        prot_details = '0.3'
+        prot_halo = '0'
+        prot_blur = '0'
+        prot_compression = '0.2'
         prot_r_t_a = ''
         if filepath.get('-protcompression', 'null') != null:
             prot_compression = filepath['-protcompression']
@@ -569,9 +597,12 @@ def final_pass(filepath, filename):
         pixfmt = 'yuv420p10le'
         # deband ,deband=c=true:b=false ,gradfun=0.8:20 ,noise=alls=1:allf=t
     try:
+        reduce = ''
+        if filepath.get('reduce', null) != null:
+            reduce = filepath['reduce']
         command = (FFMPEG + ' -hide_banner -stats_period 2.0 -nostdin -framerate ' + (get_r(filepath)[4:]) + ' -y -i "' +
              os.path.join(get_drive_path(filepath['-path'], filepath, True), filename + get_ext(filepath['-ext'])) +
-             '" -c:v libx265 -crf ' + CRF + ' -preset slow -profile:v ' + profile265 +
+             '"' + reduce + ' -c:v libx265 -crf ' + CRF + ' -preset slow -profile:v ' + profile265 +
              ' -vf "zscale=pin=bt709:min=gbr:tin=1:rin=pc:d=1:f=5:' + color_specs + ',format=yuv420p12le,format=' + pixfmt +
              '" "' + os.path.join(get_drive_path(out_path[0], filepath, False), out_path[1] + '.mkv') + '"')
         if filepath['-ext'] != 'tif' or filepath.get('pure', null != null):
@@ -855,6 +886,12 @@ def run_apo(q, out, repo):
         the_way = q.get()
         if (the_way.get('-apo', null) != null or the_way.get('-apf', null) != null or the_way.get('-chr', null) != null
                 or the_way.get('-chf', null) != null or the_way.get('-aion', null) != null):
+            the_way = apo_pass(the_way, the_way['-out'])
+            the_way['factor'] = '2.5'
+            the_way['-aion'] = null
+            the_way['-apo'] = null
+            the_way['-chf'] = 'true'
+            the_way['reduce'] = ' -r ' + str((float(the_way['-r']) * 2.5))
             out.put(apo_pass(the_way, the_way['-out']))
         else:
             out.put(the_way)
@@ -1300,6 +1337,12 @@ def run_linearly(lVideos, fStart):
         if (oVideoSpec.get('-apo', null) != null or oVideoSpec.get('-apf', null) != null or oVideoSpec.get('-chr', null) != null
                 or oVideoSpec.get('-chf', null) != null or oVideoSpec.get('-aion', null) != null):
             clrprint('Starting interpolation pass.', clr='m')
+            oVideoSpec = apo_pass(oVideoSpec, oVideoSpec['-out'])
+            oVideoSpec['factor'] = '1.25'
+            oVideoSpec['-aion'] = null
+            oVideoSpec['-apo'] = null
+            oVideoSpec['-chr'] = 'true'
+            # oVideoSpec['reduce'] = ' -r ' + str((float(oVideoSpec['-r']) * 2.5))
             oVideoSpec = apo_pass(oVideoSpec, oVideoSpec['-out'])
             clrprint('Interpolation pass took:', get_details_for_printing(oVideoSpec.get('-took', '00:00:00'))[2], clr='d,b')
             clrprint('Running total:', seconds_to_str(oVideoSpec.get('-runtot', 0.0)) + '\n', clr='d,b')
