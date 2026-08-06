@@ -340,7 +340,7 @@ def apo_pass(filepath, filename):
     factor = '2.0'
     if filepath.get('factor', null) != null:
         factor = filepath['factor']
-    if filepath['-ext'] == 'png':
+    if filepath['-ext'] == 'tif':
         frame = ' -framerate ' + filepath['-r']
     model = 'apo-8'
     if filepath.get('-chr', null) != null:
