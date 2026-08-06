@@ -51,7 +51,7 @@ def generate_next_file(rootdir):
 def generate_next_image(rootdir):
     for path, dirlist, filelist in os.walk(rootdir):
         for fn in filelist:
-            if fn.endswith('.jpg') or fn.endswith('.tif') or fn.endswith('.png'):
+            if fn.endswith('.jpg') or fn.endswith('.tif') or fn.endswith('.png') or fn.endswith('.tiff'):
                 yield os.path.join(path, fn)
 
 
